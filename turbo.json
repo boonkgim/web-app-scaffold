@@ -1,0 +1,32 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", ".open-next/**", "dist/**"]
+    },
+    "dev": { "cache": false, "persistent": true },
+    // Only the *.generated.* files are listed, not the resolver files codegen also
+    // scaffolds under src/schema/**/resolvers/. Those are seeded once and then
+    // hand-edited, so they are source, not build output — caching them would let a
+    // restored cache overwrite real implementations.
+    "codegen": {
+      "outputs": [
+        "src/generated/**",
+        "src/schema/**/*.generated.*",
+        "cloudflare-env.d.ts",
+        "src/worker-env.d.ts",
+        // `next typegen`'s route types (LayoutProps, PageProps). Inside .next, which
+        // is gitignored, so a fresh clone has none until codegen runs — listing it
+        // here is what lets a cache hit restore them instead of only a full build.
+        ".next/types/**"
+      ]
+    },
+    "typecheck": { "dependsOn": ["^build", "codegen", "^codegen"] },
+    "lint": { "dependsOn": ["codegen", "^codegen"] },
+    "format": { "cache": false },
+    "test": { "dependsOn": ["^build", "^codegen"] },
+    "test:unit": { "dependsOn": ["^build", "^codegen"] },
+    "test:integration": { "dependsOn": ["^build", "^codegen"], "cache": false }
+  }
+}

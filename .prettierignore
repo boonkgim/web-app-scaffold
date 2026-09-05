@@ -1,0 +1,11 @@
+# Generated, machine-owned files. prettier already skips everything in .gitignore
+# (its default --ignore-path), so this file is only for generated files that ARE
+# committed — reformatting those produces a huge diff that the generator reverts.
+pnpm-lock.yaml
+**/src/generated/
+packages/db/migrations/
+# `wrangler types` output: ~15k lines of runtime types per app, rewritten on every
+# regeneration. Prettier disagrees with its formatting, so without these two the first
+# `pnpm format` reformats both files and the next `pnpm codegen` puts them back.
+apps/web/cloudflare-env.d.ts
+apps/graphql/src/worker-env.d.ts

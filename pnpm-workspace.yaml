@@ -1,0 +1,44 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Postinstall scripts are blocked by default (supply-chain hardening). These two
+# fetch/link platform binaries and must run: workerd is the Workers runtime behind
+# `wrangler dev` and `opennextjs-cloudflare preview`; esbuild is wrangler's bundler.
+allowBuilds:
+  esbuild: true
+  workerd: true
+  sharp: false
+  unrs-resolver: false
+
+# One version of shared tooling across every package. Packages write
+# "typescript": "catalog:" and the version is resolved from here.
+#
+# Verify all three before running this slice — they are the pins most likely to
+# have moved, and two of the three moved between writing this and last checking it.
+#
+# TypeScript is held at 6.x, NOT the 7.x native port: typescript-eslint 8.69.0
+# still declares `typescript: ">=4.8.4 <6.1.0"` and hard-errors ("typescript-eslint
+# does not support TS 7.0") rather than warning, which takes the shared ESLint base —
+# and so `pnpm lint` in every package — down with it. tsc and `next build` are
+# both fine on 7; ESLint is the sole blocker. npm's `latest` for typescript is 7.x,
+# so a bare `pnpm add -D typescript` lands on the broken side and the catalog pin
+# is what pulls it back — you will see it do exactly that on `pnpm install`.
+# Revisit when typescript-eslint ships TS >= 6.1 support:
+# https://github.com/typescript-eslint/typescript-eslint/issues/10940
+#
+# ESLint is 10.x. 9.x is deprecated on npm ("no longer supported") and installing it
+# prints that on every run; typescript-eslint 8.69.0 peers
+# `eslint: ^8.57.0 || ^9.0.0 || ^10.0.0`, so nothing holds this back. @eslint/js
+# follows eslint's major and is installed unpinned below, which is why it needs no
+# catalog entry.
+#
+# @types/node tracks the runtime in .nvmrc / engines (Node 24), not whatever
+# create-next-app happened to scaffold. It drifts to ^20 otherwise — four majors
+# behind the runtime, which under-declares newer APIs and mistypes changed ones.
+# Track the newest release of the Node major this repo runs, not npm's `latest`:
+# @types/node ships majors for Node versions you are not on.
+catalog:
+  typescript: ^6.0.3
+  eslint: ^10.10.0
+  "@types/node": ^24.13.3

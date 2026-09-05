@@ -1,0 +1,14 @@
+# Known-expected mismatches, one per line, with the reason.
+#
+# Mid-build mismatches do NOT belong here. docs/setup holds a slice file only once that
+# slice has been built, so the plan never describes a rewrite the repo has not reached —
+# the one exception being the slice you are standing in, where a mismatch is your
+# remaining work rather than something to baseline.
+#
+# The script fails on entries that no longer mismatch, so this file cannot quietly rot.
+#
+# Files: repo-relative path. Scripts: <package dir>:<script name>.
+#
+# An entry is added by the slice that makes it true, never in advance. The check fails on
+# an entry nothing mismatches, and a path no installed slice even describes mismatches
+# nothing — so a baseline written ahead of its slice fails from the moment it is written.
