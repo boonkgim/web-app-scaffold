@@ -9,15 +9,17 @@ signature verified over a raw body under workerd's WebCrypto; and a payment form
 Slice 5 proved a Worker can call out to an API. This is the other direction, and the
 direction where being wrong costs money.
 
-## This project's Stripe account
+## Which Stripe account to build against
 
-`sandbox` — `acct_<your-stripe-account>`, contact `you@example.com` — chosen over
-the two live-capable profiles on this machine (`YOUR-ACCOUNT` and `your-account`, both
-`charges_enabled: true`) for a reason worth keeping: it is the only one whose CLI config holds
-**no live key at all**. Test mode is then a property of the account rather than a variable
-some later command has to get right, which is a stronger guarantee than `STRIPE_MODE` alone.
-It is not the CLI's default profile, so every `stripe` command here carries
-`--project-name 'your sandbox profile'`.
+Use a **sandbox account whose CLI config holds no live key at all**, not a live-capable
+account switched into test mode. The difference is worth the setup: test mode becomes a
+property of the account rather than a variable some later command has to get right, which
+is a stronger guarantee than `STRIPE_MODE` alone. A mistyped flag against a live-capable
+profile can move real money; against a sandbox there is no live key to reach for.
+
+If that sandbox is not your CLI's default profile — and it should not have to be — give
+every `stripe` command in this slice `--project-name '<your sandbox profile>'`, so the
+account is named at each call site instead of inherited from ambient state.
 
 Both credentials the slice needs are already on this machine: `stripe login` stored a
 `test_mode_api_key` (an `rk_test_` restricted key — which `assertKeyMatchesMode` accepts by
@@ -70,7 +72,7 @@ fails blank rather than loudly.
 
 | Decision                                                            | Why                                                                                                                                                                                                                                                    |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Webhook direct to `web-app-scaffold-graphql`, not through the proxy         | No cookie to keep same-origin. The signature is the authentication, and every extra hop is a chance to alter the bytes it covers.                                                                                                                      |
+| Webhook direct to `web-app-scaffold-graphql`, not through the proxy | No cookie to keep same-origin. The signature is the authentication, and every extra hop is a chance to alter the bytes it covers.                                                                                                                      |
 | `stripe` with `httpClient: Stripe.createFetchHttpClient()`          | The SDK's default client reaches for `node:https`, which workerd does not provide however `nodejs_compat` is set. It fails at the first call, not at import.                                                                                           |
 | `constructEventAsync` + `createSubtleCryptoProvider()`              | WebCrypto is async, so the synchronous `constructEvent` cannot run here at all.                                                                                                                                                                        |
 | Raw body read once, as text, before anything parses it              | The signature covers the exact bytes sent. `request.json()` consumes the body, and re-serialising the object yields different bytes for the same data.                                                                                                 |
@@ -1954,13 +1956,13 @@ never lands in a terminal buffer, a clipboard, or scrollback.
 
 Developers → Webhooks → **Add endpoint**, with the test/live toggle set to **test**:
 
-| Field          | Set it to                                                       |
-| -------------- | --------------------------------------------------------------- |
-| Endpoint URL   | `https://web-app-scaffold-graphql.yoursubdomain.workers.dev/stripe/webhook`  |
-| Listen to      | **Events on your account** — not "Events on Connected accounts" |
-| Events to send | `checkout.session.completed`, and nothing else                  |
-| Version        | leave on the account's default API version                      |
-| Description    | anything; it is a label                                         |
+| Field          | Set it to                                                                   |
+| -------------- | --------------------------------------------------------------------------- |
+| Endpoint URL   | `https://web-app-scaffold-graphql.yoursubdomain.workers.dev/stripe/webhook` |
+| Listen to      | **Events on your account** — not "Events on Connected accounts"             |
+| Events to send | `checkout.session.completed`, and nothing else                              |
+| Version        | leave on the account's default API version                                  |
+| Description    | anything; it is a label                                                     |
 
 Then **Reveal** the signing secret on the endpoint's page and `wrangler secret put` it as
 above. The dashboard is also where you come back if the secret is ever lost.
@@ -2092,7 +2094,7 @@ pnpm wrangler tail        # then resend a delivery from the dashboard
 That separates "the handler threw" from "Stripe never delivered". Stripe's own delivery log
 answers the second half — it records every attempt, its response code, and its body.
 
-**Round 2, as it actually ran on 2026-09-06.** Against the `sandbox` account and
+**Round 2, as it actually ran on 2026-09-06.** Against the sandbox Stripe account and
 the deploying Cloudflare account:
 
 - `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` both moved by pipe from the Stripe CLI config
