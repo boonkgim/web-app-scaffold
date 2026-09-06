@@ -2,6 +2,19 @@ packages:
   - "apps/*"
   - "packages/*"
 
+# GHSA-67mh-4wv8-2f99: esbuild <= 0.24.2 lets any website send requests to
+# `esbuild serve`'s dev server and read the response. It reaches this repo only through
+# drizzle-kit -> @esbuild-kit/core-utils, a deprecated package drizzle-kit still declares
+# beside its own modern esbuild, and which pins esbuild 0.18. Nothing here runs
+# `esbuild serve`, so it was never exploitable -- but a standing alert nobody can act on
+# is how an alert list turns into wallpaper.
+#
+# Scoped to that one parent, NOT a bare `esbuild:` override: wrangler and vite resolve
+# their own esbuild and must keep doing so. Drop it when drizzle-kit drops @esbuild-kit;
+# pnpm reports an override that matches nothing, so it cannot rot silently.
+overrides:
+  "@esbuild-kit/core-utils>esbuild": "^0.25.0"
+
 # Postinstall scripts are blocked by default (supply-chain hardening). These two
 # fetch/link platform binaries and must run: workerd is the Workers runtime behind
 # `wrangler dev` and `opennextjs-cloudflare preview`; esbuild is wrangler's bundler.
@@ -68,12 +81,12 @@ catalog:
 # values are the same for anyone installing better-auth 1.7.3. Expect the next slice
 # that adds a dependency to extend it, and amend this hunk when it does.
 minimumReleaseAgeExclude:
-  - '@better-auth/core@1.7.3'
-  - '@better-auth/drizzle-adapter@1.7.3'
-  - '@better-auth/kysely-adapter@1.7.3'
-  - '@better-auth/memory-adapter@1.7.3'
-  - '@better-auth/mongo-adapter@1.7.3'
-  - '@better-auth/prisma-adapter@1.7.3'
-  - '@better-auth/telemetry@1.7.3'
+  - "@better-auth/core@1.7.3"
+  - "@better-auth/drizzle-adapter@1.7.3"
+  - "@better-auth/kysely-adapter@1.7.3"
+  - "@better-auth/memory-adapter@1.7.3"
+  - "@better-auth/mongo-adapter@1.7.3"
+  - "@better-auth/prisma-adapter@1.7.3"
+  - "@better-auth/telemetry@1.7.3"
   - better-auth@1.7.3
   - auth@1.7.3

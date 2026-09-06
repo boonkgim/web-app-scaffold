@@ -85,6 +85,39 @@ pnpm add drizzle-orm pg
 pnpm add -D drizzle-kit @types/pg
 ```
 
+**drizzle-kit drags in a vulnerable esbuild, and it is worth pinning here rather than
+ignoring later.** It declares `@esbuild-kit/esm-loader` beside its own modern esbuild; that
+deprecated package pins esbuild 0.18, which is inside the range of GHSA-67mh-4wv8-2f99 —
+`esbuild serve`'s dev server answers any website that asks. Nothing in this repo runs
+`esbuild serve`, so it is not exploitable here, and upgrading does not help: 0.31.10 is
+current and still declares it. But a permanent alert nobody can act on is how a security tab
+becomes wallpaper, so pin the transitive copy instead, back at the root:
+
+```diff
+--- pnpm-workspace.yaml
+   - "packages/*"
+
++# GHSA-67mh-4wv8-2f99: esbuild <= 0.24.2 lets any website send requests to
++# `esbuild serve`'s dev server and read the response. It reaches this repo only through
++# drizzle-kit -> @esbuild-kit/core-utils, a deprecated package drizzle-kit still declares
++# beside its own modern esbuild, and which pins esbuild 0.18. Nothing here runs
++# `esbuild serve`, so it was never exploitable -- but a standing alert nobody can act on
++# is how an alert list turns into wallpaper.
++#
++# Scoped to that one parent, NOT a bare `esbuild:` override: wrangler and vite resolve
++# their own esbuild and must keep doing so. Drop it when drizzle-kit drops @esbuild-kit;
++# pnpm reports an override that matches nothing, so it cannot rot silently.
++overrides:
++  "@esbuild-kit/core-utils>esbuild": "^0.25.0"
++
+ # Postinstall scripts are blocked by default (supply-chain hardening). These two
+```
+
+Scoped to that one parent, **not** a bare `esbuild:` override — wrangler and vite resolve
+their own esbuild and must keep doing so. Verify with `pnpm why esbuild`: 0.18.20 should be
+gone and the remaining versions untouched. Drop the override when drizzle-kit drops
+`@esbuild-kit`; pnpm reports an override that matches nothing, so it cannot rot silently.
+
 The `exports` line is load-bearing and easy to skip: `pnpm init` writes `"main": "index.js"`
 pointing at a file this package never creates, so `import ... from "@web-app-scaffold/db"` fails to
 resolve in every consumer — wrangler's build error even suggests adding an `alias`, which
