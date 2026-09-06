@@ -19,6 +19,11 @@ updates:
       # Revisit deliberately, not via an automated PR.
       - dependency-name: typescript
         update-types: [version-update:semver-major]
+      # Catalog-pinned to track the runtime in .nvmrc and `engines` (Node 24), not the
+      # newest major @types/node publishes. A bump to 26 types a Node nobody here runs.
+      # Raise it deliberately when the runtime moves, alongside .nvmrc.
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /
