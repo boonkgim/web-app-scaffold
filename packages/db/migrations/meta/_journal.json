@@ -8,6 +8,13 @@
       "when": 1788663430547,
       "tag": "0000_naive_silvermane",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788671691004,
+      "tag": "0001_natural_blur",
+      "breakpoints": true
     }
   ]
 }

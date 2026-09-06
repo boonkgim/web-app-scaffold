@@ -1,10 +1,12 @@
 import { graphqlFetch } from "@/lib/api";
 import { graphql } from "@/generated";
 import { ModeToggle } from "@/components/mode-toggle";
+import { AuthPanel } from "@/components/auth-panel";
 import {
   Card,
   CardAction,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -18,6 +20,9 @@ const HomeQuery = graphql(`
     version
     health
     appEnv
+    viewer {
+      email
+    }
   }
 `);
 
@@ -58,9 +63,21 @@ export default async function Home() {
                   undefined in the browser. */}
               <dt className="text-muted-foreground">web env</dt>
               <dd>{process.env.NEXT_PUBLIC_APP_ENV}</dd>
+              {/* Read by the server from the forwarded cookie. The panel below reads
+                  the same session in the browser; the two agreeing is the proof. */}
+              <dt className="text-muted-foreground">viewer</dt>
+              <dd>{res.data?.viewer?.email ?? "signed out"}</dd>
             </dl>
           )}
         </CardContent>
+        {/* No padding or border added here: CardFooter already carries both
+            (`border-t p-(--card-spacing)`). The wrapper only stretches the panel to the
+            footer's width, since CardFooter is a flex row. */}
+        <CardFooter>
+          <div className="w-full">
+            <AuthPanel />
+          </div>
+        </CardFooter>
       </Card>
     </main>
   );

@@ -27,3 +27,10 @@ apps/graphql/wrangler.jsonc  # permanent: vars are added by hand, never whole-fi
 # overwrite your real key or commit one. Slice 2 wrote it; Slice 5 appends a fragment
 # and hands it back. Nothing to delete when a later slice lands.
 apps/graphql/.env.development  # permanent: gitignored and holds secrets, appended by hand
+
+# Slice 5 wrote this file; Slice 6 renamed it to emails/sign-in-email.tsx, because with
+# magic link the mail signs you in rather than confirming an address. docs-check has no
+# "removed on purpose" op, so without this line the retired path reports as a permanent
+# and wrong "not built yet". Delete the line if you take Slice 6's email + password
+# variant, which restores the file — a baseline entry that mismatches nothing fails.
+packages/email/emails/verify-email.tsx  # retired by Slice 6's rename

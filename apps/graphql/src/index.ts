@@ -2,6 +2,7 @@ import { createSchema, createYoga } from "graphql-yoga";
 import { resolvers } from "./schema/resolvers.generated";
 import { typeDefs } from "./schema/typeDefs.generated";
 import { corsFor } from "./cors";
+import { createAuth, isAuthPath } from "./auth";
 import type { Env } from "./context";
 
 export type { Env };
@@ -23,4 +24,22 @@ const yoga = createYoga<Env>({
   cors: (_request, env) => corsFor(env as Env),
 });
 
-export default { fetch: yoga.fetch };
+// Better Auth owns everything under its basePath; Yoga owns the rest. Auth is a set of
+// HTTP endpoints, not a GraphQL concern — behind a mutation it would mean
+// re-implementing its cookie handling in a resolver.
+//
+// ctx is optional because the unit tests call this with two arguments — and spread
+// rather than passed, because Yoga's rest parameter is `Partial<Env>[]` and takes no
+// `undefined`. It is forwarded and not dropped: `export default { fetch: yoga.fetch }`
+// handed the runtime's third argument straight through, so not passing it here would
+// quietly take `waitUntil` away from Yoga.
+export default {
+  fetch(
+    request: Request,
+    env: Env,
+    ctx?: ExecutionContext,
+  ): Response | Promise<Response> {
+    if (isAuthPath(request.url)) return createAuth(env).handler(request);
+    return yoga.fetch(request, env, ...(ctx ? [ctx] : []));
+  },
+};

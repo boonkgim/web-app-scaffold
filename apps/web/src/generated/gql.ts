@@ -15,16 +15,16 @@ import * as types from './graphql';
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "\n  query Home {\n    version\n    health\n    appEnv\n  }\n": typeof types.HomeDocument,
+    "\n  query Home {\n    version\n    health\n    appEnv\n    viewer {\n      email\n    }\n  }\n": typeof types.HomeDocument,
 };
 const documents: Documents = {
-    "\n  query Home {\n    version\n    health\n    appEnv\n  }\n": types.HomeDocument,
+    "\n  query Home {\n    version\n    health\n    appEnv\n    viewer {\n      email\n    }\n  }\n": types.HomeDocument,
 };
 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query Home {\n    version\n    health\n    appEnv\n  }\n"): typeof import('./graphql').HomeDocument;
+export function graphql(source: "\n  query Home {\n    version\n    health\n    appEnv\n    viewer {\n      email\n    }\n  }\n"): typeof import('./graphql').HomeDocument;
 
 
 export function graphql(source: string) {

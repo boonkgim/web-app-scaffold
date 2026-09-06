@@ -42,9 +42,38 @@ allowBuilds:
 # react/react-dom are exact, not ranged: apps/web takes what Next pinned and
 # packages/email must match it. Two resolutions means two React copies, which
 # renders nothing and explains nothing.
+#
+# better-auth and its CLI are one release train, versioned in lockstep upstream.
+# The CLI is here despite having one installer because a CLI that generates tables
+# for a different version than the runtime reads produces a migration that applies
+# cleanly and a sign-in that fails.
+#
+# There is deliberately no @better-auth/drizzle-adapter entry. better-auth depends
+# on it at an exact pin and re-exports it as better-auth/adapters/drizzle, so a
+# second ranged entry here would drift away from the copy core actually uses.
 catalog:
   typescript: ^6.0.3
   eslint: ^10.10.0
   "@types/node": ^24.13.3
   react: 19.2.8
   react-dom: 19.2.8
+  better-auth: ^1.7.3
+  auth: ^1.7.3
+
+# Written by pnpm itself, not by hand. pnpm 11 holds a release-age cooldown on new
+# versions and records the ones an install accepted anyway; `pnpm add` appends here
+# and prints what it added. It is committed because it is real resolution state a
+# fresh clone must reproduce — and it is in this doc rather than baselined in
+# docs-check.ignore because, unlike wrangler.jsonc's account-specific ids, these
+# values are the same for anyone installing better-auth 1.7.3. Expect the next slice
+# that adds a dependency to extend it, and amend this hunk when it does.
+minimumReleaseAgeExclude:
+  - '@better-auth/core@1.7.3'
+  - '@better-auth/drizzle-adapter@1.7.3'
+  - '@better-auth/kysely-adapter@1.7.3'
+  - '@better-auth/memory-adapter@1.7.3'
+  - '@better-auth/mongo-adapter@1.7.3'
+  - '@better-auth/prisma-adapter@1.7.3'
+  - '@better-auth/telemetry@1.7.3'
+  - better-auth@1.7.3
+  - auth@1.7.3

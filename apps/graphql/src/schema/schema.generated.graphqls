@@ -10,4 +10,10 @@ type Query {
   appEnv: String!
   health: String!
   version: String!
+  viewer: Viewer
+}
+
+type Viewer {
+  email: String!
+  id: ID!
 }

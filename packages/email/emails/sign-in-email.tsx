@@ -9,7 +9,7 @@ import {
   Text,
 } from "react-email";
 
-export interface VerifyEmailProps {
+export interface SignInEmailProps {
   url: string;
 }
 
@@ -29,23 +29,33 @@ const button = {
 };
 const muted = { color: "#71717a", fontSize: "12px" };
 
-export function VerifyEmail({ url }: VerifyEmailProps) {
+export function SignInEmail({ url }: SignInEmailProps) {
   return (
     <Html>
       <Head />
       {/* The inbox line under the subject. Without it clients scrape the first text
           they find, which is usually the heading repeated. */}
-      <Preview>Confirm your cc4-test email address</Preview>
+      <Preview>Your cc4-test sign-in link</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading>Confirm your email</Heading>
-          <Text>Click the button to confirm this address for cc4-test.</Text>
+          <Heading>Sign in to cc4-test</Heading>
+          {/* No expiry in minutes and no "single use" promise with a number attached:
+              both live in the magicLink plugin's options, and a second copy here goes
+              stale the moment someone tunes them. */}
+          <Text>Click the button to sign in. The link works once.</Text>
           <Button href={url} style={button}>
-            Confirm email
+            Sign in
           </Button>
           {/* The bare URL is not decoration: a client that blocks the button leaves
               the recipient with no way through, and the text alternative needs it. */}
           <Text style={muted}>Or paste this into your browser: {url}</Text>
+          {/* This mail is a credential, which the confirm-your-address one it replaced
+              was not. Anyone can put an address into the form, so the recipient who did
+              not ask needs the sentence that says ignoring it is the whole remedy. */}
+          <Text style={muted}>
+            If you did not request this, ignore this email. Nobody can sign in
+            without the link above.
+          </Text>
         </Container>
       </Body>
     </Html>
@@ -53,8 +63,8 @@ export function VerifyEmail({ url }: VerifyEmailProps) {
 }
 
 // `email dev` renders the default export, with PreviewProps as its sample data.
-VerifyEmail.PreviewProps = {
-  url: "https://cc4-test.example/api/auth/verify-email?token=preview",
-} satisfies VerifyEmailProps;
+SignInEmail.PreviewProps = {
+  url: "https://cc4-test.example/api/auth/magic-link/verify?token=preview",
+} satisfies SignInEmailProps;
 
-export default VerifyEmail;
+export default SignInEmail;

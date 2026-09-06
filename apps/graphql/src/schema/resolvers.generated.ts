@@ -3,8 +3,14 @@ import type { Resolvers } from "./types.generated";
 import { appEnv as Query_appEnv } from "./system/resolvers/Query/appEnv";
 import { health as Query_health } from "./system/resolvers/Query/health";
 import { version as Query_version } from "./system/resolvers/Query/version";
+import { viewer as Query_viewer } from "./auth/resolvers/Query/viewer";
 import { sendTestEmail as Mutation_sendTestEmail } from "./mail/resolvers/Mutation/sendTestEmail";
 export const resolvers: Resolvers = {
-  Query: { appEnv: Query_appEnv, health: Query_health, version: Query_version },
+  Query: {
+    appEnv: Query_appEnv,
+    health: Query_health,
+    version: Query_version,
+    viewer: Query_viewer,
+  },
   Mutation: { sendTestEmail: Mutation_sendTestEmail },
 };

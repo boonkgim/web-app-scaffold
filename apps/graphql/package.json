@@ -13,7 +13,8 @@
     "deploy:production": "wrangler deploy --env-file .env.production",
     "cf-typegen": "wrangler types --env-interface WorkerEnv src/worker-env.d.ts --strict-vars false",
     "codegen": "pnpm run cf-typegen && pnpm run codegen:graphql",
-    "codegen:graphql": "graphql-codegen && prettier --write --ignore-unknown \"src/schema/**/*\""
+    "codegen:graphql": "graphql-codegen && prettier --write --ignore-unknown \"src/schema/**/*\"",
+    "auth:generate": "auth generate --config auth.config.ts --output ../../packages/db/src/auth-schema.ts --yes"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +23,7 @@
   "dependencies": {
     "@cc4-test/db": "workspace:*",
     "@cc4-test/email": "workspace:*",
+    "better-auth": "catalog:",
     "graphql": "^17.0.2",
     "graphql-yoga": "^5.22.0"
   },
@@ -29,6 +31,7 @@
     "@eddeee888/gcg-typescript-resolver-files": "0.19.0",
     "@graphql-codegen/cli": "^7.4.0",
     "@types/node": "catalog:",
+    "auth": "catalog:",
     "typescript": "catalog:",
     "vitest": "^5.0.0",
     "wrangler": "4.129.0"

@@ -26,6 +26,9 @@
     // Who sendTestEmail may write to. Fail-closed, like CORS_ORIGINS: an empty list
     // refuses everything, so a public mutation cannot become an open relay.
     "MAIL_TEST_RECIPIENTS": "you@example.com",
+    // The origin the browser sees. Not this Worker's own URL — Better Auth validates
+    // the request's Origin against this, so pointing it here rejects the proxy.
+    "BETTER_AUTH_URL": "https://web-app-scaffold-web.yoursubdomain.workers.dev",
   },
   // The pooler that fronts packages/db's Postgres for this Worker. Configured here
   // rather than in the database slice because it is the object that *joins* the two:

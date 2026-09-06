@@ -9,6 +9,14 @@ description: Write or change transactional email in cc4-test — React Email tem
 
 - **Owns:** `emails/*.tsx` (templates), `src/render.tsx` (subject + html + text),
   `src/mailer.ts` (transports). Exported through `src/index.ts`.
+- **`emails/sign-in-email.tsx` is a credential, not a notification.** From Slice 6 it
+  carries a working magic link. It must keep the bare URL as text (a client that blocks
+  the button leaves the recipient stranded), keep the "if you did not request this" line
+  (anyone can put an address into the form), and name no expiry in minutes — that number
+  lives in `authOptions` and a copy here goes stale silently. See the `auth` skill.
+- **The `log` transport prints the link; the `resend` one must never.** `MAIL_TRANSPORT=log`
+  adds `url=` to its line because locally that is the only way to sign in. Adding the same
+  to the Resend branch would write live credentials into a production log.
 - **Never imports the Worker's `Env`.** `createMailer` takes `MailEnv`, declared
   structurally, so this package does not know it runs on Workers.
 - **Never sends from a test.** Unit tests mock the `resend` module and assert the payload.

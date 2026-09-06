@@ -1,4 +1,4 @@
-export { renderVerifyEmail, type RenderedEmail } from "./render";
+export { renderSignInEmail, type RenderedEmail } from "./render";
 export {
   createMailer,
   type MailEnv,

@@ -7,7 +7,7 @@ export type RequireFields<T, K extends keyof T> = Omit<T, K> & {
 };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string; output: string };
+  ID: { input: string; output: string | number };
   String: { input: string; output: string };
   Boolean: { input: boolean; output: boolean };
   Int: { input: number; output: number };
@@ -32,6 +32,13 @@ export type Query = {
   appEnv: Scalars["String"]["output"];
   health: Scalars["String"]["output"];
   version: Scalars["String"]["output"];
+  viewer?: Maybe<Viewer>;
+};
+
+export type Viewer = {
+  __typename?: "Viewer";
+  email: Scalars["String"]["output"];
+  id: Scalars["ID"]["output"];
 };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -157,6 +164,8 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars["Boolean"]["output"]>;
   String: ResolverTypeWrapper<Scalars["String"]["output"]>;
   Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
+  Viewer: ResolverTypeWrapper<Viewer>;
+  ID: ResolverTypeWrapper<Scalars["ID"]["output"]>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -165,6 +174,8 @@ export type ResolversParentTypes = {
   Boolean: Scalars["Boolean"]["output"];
   String: Scalars["String"]["output"];
   Query: Record<PropertyKey, never>;
+  Viewer: Viewer;
+  ID: Scalars["ID"]["output"];
 };
 
 export type MutationResolvers<
@@ -188,9 +199,20 @@ export type QueryResolvers<
   appEnv?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   health?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   version?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  viewer?: Resolver<Maybe<ResolversTypes["Viewer"]>, ParentType, ContextType>;
+};
+
+export type ViewerResolvers<
+  ContextType = Env,
+  ParentType extends ResolversParentTypes["Viewer"] =
+    ResolversParentTypes["Viewer"],
+> = {
+  email?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
 };
 
 export type Resolvers<ContextType = Env> = {
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Viewer?: ViewerResolvers<ContextType>;
 };

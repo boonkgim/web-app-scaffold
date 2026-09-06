@@ -7,7 +7,7 @@ import { DocumentTypeDecoration } from '@graphql-typed-document-node/core';
 export type HomeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type HomeQuery = { version: string, health: string, appEnv: string };
+export type HomeQuery = { version: string, health: string, appEnv: string, viewer: { email: string } | null };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -33,5 +33,8 @@ export const HomeDocument = new TypedDocumentString(`
   version
   health
   appEnv
+  viewer {
+    email
+  }
 }
     `) as unknown as TypedDocumentString<HomeQuery, HomeQueryVariables>;

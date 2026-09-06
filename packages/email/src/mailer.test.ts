@@ -64,6 +64,22 @@ test("the log transport touches no network", async () => {
   expect(fetchMock).not.toHaveBeenCalled();
 });
 
+// The local gate and the integration tests both read the link off this line. Without
+// it they fail as "no link in the mail log", which reads like a mail bug and is not one.
+test("the log transport prints the link out of the text body", async () => {
+  const logged = vi.spyOn(console, "log").mockImplementation(() => {});
+
+  await createMailer(env({ MAIL_TRANSPORT: "log" })).send({
+    ...message,
+    text: "Sign in: https://example.test/api/auth/magic-link/verify?token=t",
+  });
+
+  expect(String(logged.mock.calls[0][0])).toContain(
+    "url=https://example.test/api/auth/magic-link/verify?token=t",
+  );
+  logged.mockRestore();
+});
+
 // The whole point of naming the transport: neither of these may fall back to logging.
 test("an unset or unknown transport throws rather than degrading", () => {
   expect(() => createMailer(env({}))).toThrow("MAIL_TRANSPORT");

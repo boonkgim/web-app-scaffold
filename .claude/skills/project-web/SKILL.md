@@ -11,6 +11,9 @@ description: Change the cc4-test Next.js app in apps/web — pages, components, 
 - **Never imports `@cc4-test/db`.** Web reaches data only through the GraphQL API. The
   dependency graph is what enforces the architecture.
 - **Never edits `src/generated/**`** — regenerated from the API's merged SDL.
+- **`src/app/api/auth/[...all]/route.ts` is a transparent proxy to the API Worker**, and the
+  browser must never call the API's own origin. Read the `auth` skill before touching it,
+  `src/lib/auth-client.ts`, or `apiFetch`.
 - **This is not the Next.js you know.** Next 16 has breaking changes against training data:
   read the relevant guide in `node_modules/next/dist/docs/` before reaching for an API from
   memory. `export const dynamic` is gone — `connection()` replaces it.
@@ -40,6 +43,8 @@ const res = await graphqlFetch(HomeQuery);
   bindings needs a real request and `getCloudflareContext()` throws during prerender.
   **Don't add your own prerender opt-out in a page** — the helper is where it belongs so a
   new page cannot forget it.
+- It also forwards the visitor's cookie, so `{ viewer { … } }` works from a server component
+  with nothing else to wire.
 - Variables are positional-by-type: the argument is required exactly when the operation
   declares variables.
 
@@ -70,12 +75,17 @@ const res = await graphqlFetch(HomeQuery);
 
 ## Judgment calls
 
+- **Writing any component, page, or form: read the `project-ui` skill first.** It owns how UI
+  is written here — reusing the vendored components, tokens, the server/client boundary,
+  loading and error states, accessibility, messages, and layout that does not shift.
 - **No component ever names a colour.** Semantic tokens only: `bg-background`,
   `text-muted-foreground`, `text-destructive`.
 - `NEXT_PUBLIC_*` must be written as a **literal member expression**
   (`process.env.NEXT_PUBLIC_APP_ENV`). `process.env[name]` and destructuring are not
   inlined by `next build` and arrive `undefined` in the browser. Nothing secret ever gets
   the `NEXT_PUBLIC_` prefix.
+- A client-side sign-in does not re-render a server component. `router.refresh()` is what
+  makes a server-read `viewer` catch up.
 - New binding in `wrangler.jsonc` → `pnpm cf-typegen`.
 - `next dev` rewrites the rules block in `AGENTS.md`. Committing that with your work keeps
   the tree clean; removing it just re-creates the uncommitted change.

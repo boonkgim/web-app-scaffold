@@ -55,7 +55,14 @@ export function createMailer(env: MailEnv): Mailer {
     case "log":
       return {
         async send(message) {
-          console.log(`[mail:log] to=${message.to} subject=${message.subject}`);
+          // The link too, and only on this branch. Never on the resend one: that
+          // would write a live sign-in credential into a production log, where it
+          // outlives the mail and is readable by anyone with log access.
+          const link = message.text.match(/https?:\/\/\S+/)?.[0];
+          const url = link ? ` url=${link}` : "";
+          console.log(
+            `[mail:log] to=${message.to} subject=${message.subject}${url}`,
+          );
         },
       };
 
