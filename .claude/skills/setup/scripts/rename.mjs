@@ -181,9 +181,10 @@ Next, in order:
   2. node scripts/docs-check.mjs  must report no drift — a mismatch here means a missed file
   3. git diff                     review, then commit
 
-Not fixed by this rename — they are the template author's accounts, not names:
-  apps/graphql/wrangler.jsonc  CORS_ORIGINS / WEB_ORIGIN  (someone else's workers.dev subdomain)
-  apps/graphql/wrangler.jsonc  MAIL_TEST_RECIPIENTS       (someone else's inbox)
-  apps/graphql/wrangler.jsonc  hyperdrive[0].id           (a deleted binding — deploy fails until reissued)
-These are re-issued during cloud provisioning, not renamed.
+Still empty, because they are accounts rather than names — a rename cannot invent them:
+  apps/graphql/wrangler.jsonc  MAIL_TEST_RECIPIENTS  asked for in Phase 3; empty refuses every recipient
+  apps/graphql/wrangler.jsonc  CORS_ORIGINS          derived in Phase 4; empty allows no origin
+  apps/graphql/wrangler.jsonc  WEB_ORIGIN            derived in Phase 4; empty is a named requireEnv error
+  apps/graphql/wrangler.jsonc  hyperdrive[0].id      derived in Phase 4; empty is fine until a real deploy
+All four are fail-closed while empty, so the local stack runs without them.
 `);

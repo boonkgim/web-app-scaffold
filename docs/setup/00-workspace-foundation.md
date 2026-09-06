@@ -211,7 +211,7 @@ EOF
 (`.claude/skills/setup-project` is this repo's own addition, not part of the reference, and it
 was added in response to what `git add -A` actually staged. The `setup-project` skill is present
 here as a **symlink to an absolute path outside the repo**
-(`/path/to/agent-skills/setup-project`), and git stores a symlink as its
+(`<your agent-skills checkout>/setup-project`), and git stores a symlink as its
 target string — so committing it would write one machine's directory layout into the repo and
 hand every other clone a dangling link.
 

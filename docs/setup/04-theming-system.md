@@ -837,7 +837,7 @@ Then, on the deployed URL, four things `next dev` could not have told you:
   browser cache from the `pnpm preview` run.
 
 **What Round 2 found on this run.** All five checks green on
-`https://web-app-scaffold-web.yoursubdomain.workers.dev`, first try. The evidence, rather than the
+`https://cc4-test-web.yoursubdomain.workers.dev`, first try. The evidence, rather than the
 impression:
 
 - Styled: one stylesheet, 91 rules, and the `.css` re-fetched with `cache: "no-store"` returned

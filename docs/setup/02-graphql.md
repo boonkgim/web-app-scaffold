@@ -103,7 +103,7 @@ cat > wrangler.jsonc <<'EOF'
   // Renamed from "cc4-test-api". A Worker's name is its identity, not a label: this
   // deploy created a new Worker rather than renaming the old one, so the migration was
   // deploy this, repoint apps/web's `API` binding, deploy web, then delete the old
-  // Worker. The public URL moved to web-app-scaffold-graphql.yoursubdomain.workers.dev with it.
+  // Worker. The public URL moved to cc4-test-graphql.yoursubdomain.workers.dev with it.
   "name": "cc4-test-graphql",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-03",
@@ -1103,7 +1103,7 @@ non-secret config value, not just an allowlist:
     // A var and not a hardcoded constant because this is the one piece of the Worker
     // that names something outside it. When apps/web moves to a custom domain, its
     // origin changes and this Worker's code does not.
-    "CORS_ORIGINS": "https://web-app-scaffold-web.yoursubdomain.workers.dev",
+    "CORS_ORIGINS": "https://cc4-test-web.yoursubdomain.workers.dev",
     // Plain config, split the same way: a deployed default here, a local override
     // below. What it proves is below, once the client half exists to read it back.
     "APP_ENV": "production"
@@ -1204,7 +1204,7 @@ is the real defect it was papering over. `wrangler types` defaults to `--strict-
 which emits each var as a **literal type** read off `wrangler.jsonc`:
 
 ```ts
-CORS_ORIGINS: "https://web-app-scaffold-web.yoursubdomain.workers.dev";
+CORS_ORIGINS: "https://cc4-test-web.yoursubdomain.workers.dev";
 APP_ENV: "production";
 ```
 
@@ -1652,8 +1652,8 @@ above:
 
 | Worker             | URL                                             |
 | ------------------ | ----------------------------------------------- |
-| `cc4-test-graphql` | `https://web-app-scaffold-graphql.yoursubdomain.workers.dev` |
-| `cc4-test-web`     | `https://web-app-scaffold-web.yoursubdomain.workers.dev`     |
+| `cc4-test-graphql` | `https://cc4-test-graphql.yoursubdomain.workers.dev` |
+| `cc4-test-web`     | `https://cc4-test-web.yoursubdomain.workers.dev`     |
 
 The web deploy's binding table listed `env.API (cc4-test-graphql)` alongside `env.IMAGES`,
 `env.ASSETS` and `env.WORKER_SELF_REFERENCE` — which is the check that the `images` binding

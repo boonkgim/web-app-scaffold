@@ -604,7 +604,7 @@ credential, so the doc stops owning it whole:
 ```ini
 MAIL_TRANSPORT=log
 MAIL_FROM="cc4-test <onboarding@resend.dev>"
-MAIL_TEST_RECIPIENTS=you@example.com
+MAIL_TEST_RECIPIENTS=
 # Only needed while you flip MAIL_TRANSPORT to resend for the real-send gate row.
 # RESEND_API_KEY="re_..."
 ```
@@ -648,7 +648,7 @@ that tried would be wrong.
 +# log renders and prints; resend actually sends. Unset is an error, never a fallback.
 +MAIL_TRANSPORT=log
 +MAIL_FROM=cc4-test <onboarding@resend.dev>
-+MAIL_TEST_RECIPIENTS=you@example.com
++MAIL_TEST_RECIPIENTS=
 +# The one key with no counterpart in wrangler.jsonc. Secrets are set with
 +# `wrangler secret put` and stored by Cloudflare; a `vars` entry would be plaintext.
 +RESEND_API_KEY=re_dev_only_not_a_real_key
@@ -835,7 +835,7 @@ past, and the row turns on it. What this repo actually recorded:
 | Step                              | Response                                          | `[mail:log]` lines |
 | --------------------------------- | ------------------------------------------------- | ------------------ |
 | before                            | —                                                 | 0                  |
-| `sendTestEmail(to: "you@example.com")`   | `{"data":{"sendTestEmail":true}}`                 | 1                  |
+| `sendTestEmail(to: "you@…")`   | `{"data":{"sendTestEmail":true}}`                 | 1                  |
 | `sendTestEmail(to: "nobody@…")`   | `Recipient is not in MAIL_TEST_RECIPIENTS`        | **1** — unchanged  |
 
 Two sends, one log line. Two sends and two log lines would be the bug, and it is invisible in
@@ -924,7 +924,7 @@ never imports. Had they been reachable, the number would not be close.
 Against the deployed Worker, not localhost:
 
 ```bash
-curl -s https://web-app-scaffold-graphql.yoursubdomain.workers.dev/graphql \
+curl -s https://cc4-test-graphql.yoursubdomain.workers.dev/graphql \
   -H 'content-type: application/json' \
   -d '{"query":"mutation { sendTestEmail(to: \"you@example.com\") }"}'
 ```

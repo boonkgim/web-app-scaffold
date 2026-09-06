@@ -597,7 +597,7 @@ scripts fan out through turbo (`turbo run test:unit`); inside a package they run
 alone. `cd ../..` gets you back.
 
 **Production gate** — from `apps/web`: `pnpm deploy:production` → the
-`web-app-scaffold-web.yoursubdomain.workers.dev` URL renders. Commit.
+`cc4-test-web.yoursubdomain.workers.dev` URL renders. Commit.
 
 **Expect the first load to be a lie.** On a `workers.dev` subdomain being served for the very
 first time, the route takes a moment to propagate, and until it does Cloudflare answers with its
@@ -609,7 +609,7 @@ look:
 
 ```bash
 for i in $(seq 1 10); do
-  code=$(curl -s -o /dev/null -w "%{http_code}" https://web-app-scaffold-web.yoursubdomain.workers.dev/)
+  code=$(curl -s -o /dev/null -w "%{http_code}" https://cc4-test-web.yoursubdomain.workers.dev/)
   echo "attempt $i: $code"; [ "$code" = "200" ] && break; sleep 15
 done
 ```

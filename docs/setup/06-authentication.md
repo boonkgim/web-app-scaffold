@@ -556,7 +556,7 @@ second credential, so a heredoc would either overwrite your real key or put one 
 
 ```diff
 --- apps/graphql/.env.example
- MAIL_TEST_RECIPIENTS=you@example.com
+ MAIL_TEST_RECIPIENTS=
 +# The origin the browser sees - apps/web, never this Worker. See src/auth.ts.
 +BETTER_AUTH_URL=http://localhost:3000
 -# The one key with no counterpart in wrangler.jsonc. Secrets are set with
@@ -575,7 +575,7 @@ The deployed `BETTER_AUTH_URL` goes in `wrangler.jsonc` by hand, like the Hyperd
     ...,
     // The origin the browser sees. Not this Worker's own URL — Better Auth validates
     // the request's Origin against this, so pointing it here rejects the proxy.
-    "BETTER_AUTH_URL": "https://web-app-scaffold-web.yoursubdomain.workers.dev"
+    "BETTER_AUTH_URL": "https://cc4-test-web.yoursubdomain.workers.dev"
   }
 }
 ```
@@ -1788,10 +1788,10 @@ session and creates no account. The `user` row appears only when the link is fol
 Second, drive the verify route with a **deliberately invalid** token:
 
 ```bash
-curl -s -i "https://web-app-scaffold-web.yoursubdomain.workers.dev/api/auth/magic-link/verify?token=not-a-real-token&callbackURL=%2F" | grep -iE "^HTTP|^location"
+curl -s -i "https://cc4-test-web.yoursubdomain.workers.dev/api/auth/magic-link/verify?token=not-a-real-token&callbackURL=%2F" | grep -iE "^HTTP|^location"
 ```
 
-It answered `302` with `location: https://web-app-scaffold-web.yoursubdomain.workers.dev/?error=INVALID_TOKEN`.
+It answered `302` with `location: https://cc4-test-web.yoursubdomain.workers.dev/?error=INVALID_TOKEN`.
 That single response proves the two things most likely to be broken in production and invisible
 locally — `redirect: "manual"` survived to the deployed proxy (a followed redirect would have
 returned Yoga's landing page as a `200`), and `BETTER_AUTH_URL` names the web origin rather than

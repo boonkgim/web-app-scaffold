@@ -5,9 +5,11 @@ description: Turn a fresh clone of this scaffold into the user's own project in 
 
 # setup — making this clone yours
 
-This repo is a **scaffold**. Every account-coupled value in it belongs to the template's
-author: a Cloudflare subdomain, an inbox, and a Hyperdrive id that has already been
-deleted. `/setup` replaces the ones a rename can fix and re-issues the ones it cannot.
+This repo is a **scaffold**, and it carries nobody's accounts. Every account-coupled value
+— origins, a contact inbox, a Hyperdrive id — ships as an **empty string**, fail-closed by
+design, so a clone can never talk to the template author's resources. `/setup` renames what
+a rename can fix, **asks** for what only the user knows, and **derives** the rest from the
+resources it provisions.
 
 Five phases, run in order. **Phases 1–3 need no cloud account and are a complete, working
 outcome on their own** — a local app against Docker Postgres. Many users stop there, so
@@ -67,10 +69,22 @@ a rejection is an answer to relay, not a thing to work around.
   `git checkout .` is the undo), and refuses if the template token is already absent —
   a second run is a no-op, not a double rename.
 
-Then `pnpm install` and `node scripts/docs-check.mjs`, and commit. Three values are
-deliberately **not** renamed because they are accounts, not names — `CORS_ORIGINS`,
-`WEB_ORIGIN`, `MAIL_TEST_RECIPIENTS` and `hyperdrive[0].id` in `apps/graphql/wrangler.jsonc`.
-They are re-issued in Phase 4, or left alone if the user stops at Phase 3.
+Then `pnpm install` and `node scripts/docs-check.mjs`, and commit. Four values in
+`apps/graphql/wrangler.jsonc` are deliberately **not** renamed, because they are accounts
+and origins rather than names: they ship **empty** and get filled in, not rewritten from
+someone else's values. `MAIL_FROM` still carries the project name and *is* the rename's job.
+
+### The four empty values
+
+| Value                   | Comes from                                          | Empty at runtime |
+| ----------------------- | --------------------------------------------------- | ---------------- |
+| `MAIL_TEST_RECIPIENTS`  | **Asked** — Phase 3 (local) and reused in Phase 4    | `src/mail.ts` refuses **every** recipient — silent, and the first thing a user hits testing mail locally |
+| `CORS_ORIGINS`          | **Derived** — the web Worker's deploy URL, step 5    | `src/cors.ts` allows **no** origin — every browser request fails cross-origin |
+| `WEB_ORIGIN`            | **Derived** — the same URL, step 5                   | read via `requireEnv` (`src/env.ts`), which **throws** `Missing required environment variable: WEB_ORIGIN` at the auth endpoints — a named error, not a wrong answer |
+| `hyperdrive[0].id`      | **Derived** — `wrangler hyperdrive create` output, step 2 | config still parses and `wrangler dev` does not care (it dials `localConnectionString`); only a real deploy needs a real id |
+
+Empty is **fail-closed on purpose**. Only the first row is a question for the user — never
+prompt for the other three, they are discovered during Phase 4 provisioning.
 
 ## Phase 3 — local bring-up
 
@@ -95,8 +109,17 @@ optional:
   `openssl rand -base64 32`. Paste only the value; the generator's output is the whole line
   in some tools and the `KEY=` prefix ends up inside the secret.
 
-Leave `MAIL_TRANSPORT=log` — local mail renders to the log and sends nothing. The dummy
-`sk_test_` / `pk_test_` values are enough to boot; real Stripe keys are Phase 4.
+- `apps/graphql/.env.development` → `MAIL_TEST_RECIPIENTS`, which **ships blank**, and blank
+  means `sendTestEmail` refuses every address it is given. **Ask the user for a contact
+  email** here — `AskUserQuestion` or a plain question, the same way Phase 2 asks for the
+  project name — and say why the answer is constrained: `MAIL_FROM` uses Resend's shared
+  `onboarding@resend.dev` sender, which needs no verified domain but **only delivers to the
+  Resend account owner's own address**, so this should normally be that address. Keep the
+  answer; Phase 4 writes the same value into `wrangler.jsonc` for the deployed Worker.
+
+Leave `MAIL_TRANSPORT=log` — local mail renders to the log and sends nothing, so a wrong
+address here surfaces as a log line rather than a bounce. The dummy `sk_test_` / `pk_test_`
+values are enough to boot; real Stripe keys are Phase 4.
 
 ```bash
 docker compose up -d --wait                  # --wait blocks until Postgres accepts connections
@@ -132,9 +155,14 @@ skipping it leaves an app whose every request fails cross-origin.
 
 Three things reliably go wrong here, all covered in `reference/services.md`:
 
-- The committed `hyperdrive[0].id` points at a **deleted** binding — a deploy that keeps it
-  fails. Replace it at step 2.
-- `CORS_ORIGINS` and `WEB_ORIGIN` are the **web** origin, never the API's own.
+- The committed `hyperdrive[0].id` is **empty**, which is why nothing complained in Phase 3:
+  the config parses, the Worker builds, and `wrangler dev` ignores the id entirely. A real
+  deploy does not — fill it at step 2 or the deploy fails.
+- `CORS_ORIGINS` and `WEB_ORIGIN` are the **web** origin, never the API's own. Both are
+  empty until step 5: empty `CORS_ORIGINS` rejects every origin, empty `WEB_ORIGIN` throws
+  a named `requireEnv` error at the auth endpoints.
+- `MAIL_TEST_RECIPIENTS` in `wrangler.jsonc` is also empty — write the Phase 3 answer into
+  it before deploying, or the deployed Worker refuses every recipient.
 - Both `.env.production` files must name the **same** `CLOUDFLARE_ACCOUNT_ID` — a service
   binding does not resolve across accounts.
 

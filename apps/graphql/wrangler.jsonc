@@ -1,9 +1,9 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  // Renamed from "cc4-test-api". A Worker's name is its identity, not a label: this
-  // deploy created a new Worker rather than renaming the old one, so the migration was
-  // deploy this, repoint apps/web's `API` binding, deploy web, then delete the old
-  // Worker. The public URL moved to web-app-scaffold-graphql.yoursubdomain.workers.dev with it.
+  // A Worker's name is its identity, not a label: renaming this creates a NEW Worker
+  // rather than renaming the old one, so a rename is really deploy the new name, repoint
+  // apps/web's `API` binding, deploy web, then delete the old Worker. The public URL
+  // moves with the name. `/setup` sets this from your project name.
   "name": "cc4-test-graphql",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-03",
@@ -17,7 +17,9 @@
     // A var and not a hardcoded constant because this is the one piece of the Worker
     // that names something outside it. When apps/web moves to a custom domain, its
     // origin changes and this Worker's code does not.
-    "CORS_ORIGINS": "https://web-app-scaffold-web.yoursubdomain.workers.dev",
+    // Empty until `/setup` deploys apps/web and learns its URL — it cannot be known
+    // before that Worker exists. Empty is fail-closed: src/cors.ts allows no origin.
+    "CORS_ORIGINS": "",
     // Plain config, split the same way: a deployed default here, a local override
     // below. What it proves is below, once the client half exists to read it back.
     "APP_ENV": "production",
@@ -25,12 +27,16 @@
     "MAIL_TRANSPORT": "resend",
     // Who sendTestEmail may write to. Fail-closed, like CORS_ORIGINS: an empty list
     // refuses everything, so a public mutation cannot become an open relay.
-    "MAIL_TEST_RECIPIENTS": "you@example.com",
+    // Empty ships safe and `/setup` asks you for the address.
+    "MAIL_TEST_RECIPIENTS": "",
     // The origin the browser sees. Not this Worker's own URL — Better Auth validates
     // the request's Origin against this, so pointing it here rejects the proxy.
     // Renamed from BETTER_AUTH_URL in Slice 7: same value, same reason it must be the
     // web origin; now also the host Stripe returns the visitor to after Checkout.
-    "WEB_ORIGIN": "https://web-app-scaffold-web.yoursubdomain.workers.dev",
+    // Same two-pass reason as CORS_ORIGINS above. Unlike those two this one is read with
+    // requireEnv, so an unset value is a named error at the auth endpoints rather than a
+    // silent wrong answer — which is the failure you want if `/setup` never filled it in.
+    "WEB_ORIGIN": "",
     // test or live. Deployed value, and the one var in this file worth reading twice:
     // src/stripe.ts refuses to start if the deployed key disagrees with it.
     "STRIPE_MODE": "test",
@@ -46,7 +52,11 @@
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
-      "id": "<your-hyperdrive-id>",
+      // Filled in by `/setup` from `wrangler hyperdrive create`. Empty parses fine and
+      // `wrangler dev` ignores it entirely (it dials localConnectionString below), so the
+      // local stack runs before you have a Cloudflare account at all; only a real deploy
+      // needs it.
+      "id": "",
       "localConnectionString": "postgres://postgres:postgres@localhost:5434/cc4-test",
     },
   ],

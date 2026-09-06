@@ -79,10 +79,12 @@ npx wrangler@4 hyperdrive create <name> --connection-string "<neon direct url>"
 ```
 
 Returns an id. Put it in `apps/graphql/wrangler.jsonc` at `hyperdrive[0].id`, replacing the
-template's — **the committed id belongs to a deleted binding, and a deploy that keeps it
-fails.** Leave `localConnectionString` alone: `wrangler dev` ignores the id entirely and
-dials that instead, which is what makes the same config work on a laptop with no Cloudflare
-account.
+committed **empty string** — the template carries no id at all, by design. An empty id is
+not an error you will see early: the config parses and `wrangler deploy --dry-run` builds
+the Worker fine, and `wrangler dev` ignores the id entirely and dials
+`localConnectionString` instead, which is what makes the same config work on a laptop with
+no Cloudflare account. **Only a real deploy needs a real id**, so fill it here. Leave
+`localConnectionString` alone.
 
 ## The two-pass deploy
 
@@ -94,9 +96,12 @@ the web Worker is built against the API. Neither URL exists until its Worker dep
 3. Set **both** `CORS_ORIGINS` and `WEB_ORIGIN` in `apps/graphql/wrangler.jsonc` to (2)'s
    URL — they are the web origin, never the API's own — then redeploy graphql.
 
-`<sub>` is your account's workers.dev subdomain and is **not** the project name; the
-template ships someone else's (`yoursubdomain`), which is why these two vars cannot be renamed
-into correctness and have to be read off a real deploy.
+`<sub>` is your account's workers.dev subdomain and is **not** the project name — it is not
+knowable before a deploy. That is why `CORS_ORIGINS` and `WEB_ORIGIN` ship **empty** and are
+derived here rather than asked for or renamed into correctness. Until they are set, empty
+`CORS_ORIGINS` allows no origin at all (`src/cors.ts`) and empty `WEB_ORIGIN` throws
+`Missing required environment variable: WEB_ORIGIN` from `requireEnv` (`src/env.ts`) at the
+auth endpoints — the CORS failure is silent, the auth one is named.
 
 ## Stripe
 
@@ -144,10 +149,14 @@ Drive it with the `mcp__claude-in-chrome` tools, in this order:
 Then: copy the `re_` key straight into `wrangler secret put RESEND_API_KEY` and into
 `apps/graphql/.env.development`. Never echo it into the transcript.
 
-`MAIL_FROM` ships as `<name> <onboarding@resend.dev>` — Resend's shared sender, which needs
-no verified domain but **only delivers to the Resend account owner's own address**. Set
-`MAIL_TEST_RECIPIENTS` to that address (the template holds the author's) and treat a
-custom domain as later work, not setup.
+`MAIL_FROM` ships as `<name> <onboarding@resend.dev>` — the rename fills in `<name>`, and
+`onboarding@resend.dev` is Resend's shared sender, which needs no verified domain but
+**only delivers to the Resend account owner's own address**. `MAIL_TEST_RECIPIENTS` is the
+address that mail is allowed to reach, and it ships **blank** in both `.env.example` and
+`wrangler.jsonc` — blank is fail-closed, `src/mail.ts` refuses every recipient. It is the
+one value `/setup` asks the user for outright, in Phase 3; use that same answer here, and it
+should normally be the Resend account owner's address. A custom domain is later work, not
+setup.
 
 ## Secrets
 

@@ -621,12 +621,12 @@ pnpm deploy:production
 to a version of it, so the deployed page serves the new value on its next request. Verify that
 rather than redeploying web out of caution.
 
-**Round 2 result, 2026-09-06: green.** The Neon project is `cc4-test` (`cold-wind-90313244`),
+**Round 2 result, 2026-09-06: green.** The Neon project is `cc4-test` (`<your-neon-project-id>`),
 Postgres 18, AWS US East 2 (Ohio), Free tier, branch `production`, created with **Enable Neon
 Auth off**. The Hyperdrive config is `cc4-test-hyperdrive`, id
 `<your-hyperdrive-id>`, now in `wrangler.jsonc` in place of the placeholder. The API
 deployed as version `f41c627d-8a8e-4aff-911d-a39a33472944`, and
-`https://web-app-scaffold-graphql.yoursubdomain.workers.dev/graphql` answers
+`https://cc4-test-graphql.yoursubdomain.workers.dev/graphql` answers
 `{"health":"ok:db","appEnv":"production"}`.
 
 `apps/web` was **not** redeployed, and the deployed page still picked up the new value on its

@@ -506,7 +506,7 @@ different one: `corsFor` names browser origins, and Stripe sends no `Origin` at 
     ...,
     // Renamed from BETTER_AUTH_URL. Same value, same reason it must be the web origin;
     // now also the host Stripe returns the visitor to after Checkout.
-    "WEB_ORIGIN": "https://web-app-scaffold-web.yoursubdomain.workers.dev",
+    "WEB_ORIGIN": "https://cc4-test-web.yoursubdomain.workers.dev",
     // test or live. Deployed value, and the one var in this file worth reading twice:
     // src/stripe.ts refuses to start if the deployed key disagrees with it.
     "STRIPE_MODE": "test"
@@ -1820,7 +1820,7 @@ charges a real card at step 7, which is not what a pipeline proof is for.
 Make both yours:
 
 ```jsonc
-"WEB_ORIGIN": "https://web-app-scaffold-web.yoursubdomain.workers.dev",
+"WEB_ORIGIN": "https://cc4-test-web.yoursubdomain.workers.dev",
 "STRIPE_MODE": "test"
 ```
 
@@ -1877,7 +1877,7 @@ the same `stripe` binary the local gate already uses, no `listen` involved.
 
 ```bash
 stripe webhook_endpoints create \
-  --url https://web-app-scaffold-graphql.yoursubdomain.workers.dev/stripe/webhook \
+  --url https://cc4-test-graphql.yoursubdomain.workers.dev/stripe/webhook \
   --enabled-events checkout.session.completed \
   --description "cc4-test — Slice 7"
 ```
@@ -1939,7 +1939,7 @@ plain JSON with `--color off`:
 
 ```bash
 stripe webhook_endpoints create --color off --confirm \
-  --url https://web-app-scaffold-graphql.yoursubdomain.workers.dev/stripe/webhook \
+  --url https://cc4-test-graphql.yoursubdomain.workers.dev/stripe/webhook \
   --enabled-events checkout.session.completed \
 | jq -r .secret \
 | pnpm wrangler secret put STRIPE_WEBHOOK_SECRET --cwd apps/graphql
@@ -1956,7 +1956,7 @@ Developers → Webhooks → **Add endpoint**, with the test/live toggle set to *
 
 | Field          | Set it to                                                       |
 | -------------- | --------------------------------------------------------------- |
-| Endpoint URL   | `https://web-app-scaffold-graphql.yoursubdomain.workers.dev/stripe/webhook`  |
+| Endpoint URL   | `https://cc4-test-graphql.yoursubdomain.workers.dev/stripe/webhook`  |
 | Listen to      | **Events on your account** — not "Events on Connected accounts" |
 | Events to send | `checkout.session.completed`, and nothing else                  |
 | Version        | leave on the account's default API version                      |
@@ -2093,12 +2093,12 @@ That separates "the handler threw" from "Stripe never delivered". Stripe's own d
 answers the second half — it records every attempt, its response code, and its body.
 
 **Round 2, as it actually ran on 2026-09-06.** Against the `sandbox` account and
-the `yoursubdomain` Cloudflare account:
+the deploying Cloudflare account:
 
 - `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` both moved by pipe from the Stripe CLI config
   and the endpoint-create response respectively, each behind an assertion, neither rendered.
   `wrangler secret list` now shows four secrets on `cc4-test-graphql`.
-- Endpoint `we_1UCZ8eBnLSnWkEcoWS7IM8p1` → `https://web-app-scaffold-graphql.yoursubdomain.workers.dev/stripe/webhook`,
+- Endpoint `we_1UCZ8eBnLSnWkEcoWS7IM8p1` → `https://cc4-test-graphql.yoursubdomain.workers.dev/stripe/webhook`,
   `livemode: false`, one enabled event, status enabled. `webhook_endpoints list` was checked
   before and after: one pre-existing endpoint on this account belongs to an unrelated project
   (`nanostore-graphql`) at a different URL, so no double-delivery here — but it does receive the
@@ -2110,7 +2110,7 @@ the `yoursubdomain` Cloudflare account:
 - `stripe events resend --webhook-endpoint`: still **one** row, `receivedAt` unchanged at
   `2026-09-06T06:02:48.624Z`.
 - Unsigned `POST` → `400`, `GET` → `405`, against the real public URL.
-- The deployed `/checkout` renders Stripe's form inline on `web-app-scaffold-web.yoursubdomain.workers.dev`,
+- The deployed `/checkout` renders Stripe's form inline on `cc4-test-web.yoursubdomain.workers.dev`,
   TEST MODE, `US$19.00` beside `SGD 25.03` — never `checkout.stripe.com`.
 
 Commit.
