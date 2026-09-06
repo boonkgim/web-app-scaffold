@@ -66,7 +66,12 @@ Otherwise ask which they want. Neither is wrong; they differ in what they keep:
 | Choice | What it does | Suits |
 | ------ | ------------ | ----- |
 | **Detach, keep history** | `git remote remove origin` | they want the scaffold's build history, and `docs/setup` read as the record of how it was built |
-| **Start fresh** | `rm -rf .git && git init && git add -A && git commit -m "Initial commit"` | they want their own history and their own name on it — the template's commits are authored by someone else |
+| **Start fresh** | `rm -rf .git && git init -b main && git add -A && git commit -m "Initial commit"` | they want their own history and their own name on it — the template's commits are authored by someone else |
+
+`git init -b main` — **with the `-b`**. `init.defaultBranch` is unset on most machines, so a
+bare `git init` names the branch `master`, and the new repo then disagrees with the scaffold's
+docs, GitHub's default and every `origin/main` reference in this skill. The flag needs git
+2.28+; on anything older, `git init && git branch -M main`.
 
 Then offer them a remote of their own, which is also the safest way to make the old one
 unreachable:
