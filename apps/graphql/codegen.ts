@@ -23,7 +23,13 @@ const config: CodegenConfig = {
         // generated signature types its third parameter as `any`. Note the nesting:
         // options for the underlying typescript-resolvers plugin go here, not in the
         // output's own `config` — put them there and they are silently ignored.
-        typesPluginsConfig: { contextType: "../context#Env" },
+        typesPluginsConfig: {
+          contextType: "../context#Env",
+          // Enums as string-literal unions, not TS enums. A TS enum is a value, so
+          // every `=== CheckoutStatus.Complete` needs an import of a generated module;
+          // the union form compares against "COMPLETE" and erases at build.
+          enumsAsTypes: true,
+        },
       },
     },
   },

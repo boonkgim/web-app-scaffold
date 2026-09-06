@@ -19,7 +19,10 @@ const config: CodegenConfig = {
       // result type as a phantom, instead of a parsed DocumentNode. That is what lets
       // lib/api.ts keep posting the query verbatim -- no print(), and no graphql
       // runtime pulled into the Worker bundle just to send a request.
-      config: { documentMode: "string" },
+      // enumsAsTypes mirrors apps/graphql's setting. The two configs are independent, so
+      // this is a decision made twice rather than one inherited; setting it on only one
+      // side gives a resolver returning "COMPLETE" and a page comparing an enum member.
+      config: { documentMode: "string", enumsAsTypes: true },
       // Fragment masking hides fragment fields from the parent unless unmasked at the
       // use site. Useful in a large component tree; here it is ceremony over one query.
       presetConfig: { fragmentMasking: false },

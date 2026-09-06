@@ -15,16 +15,28 @@ import * as types from './graphql';
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "\n  query Home {\n    version\n    health\n    appEnv\n    viewer {\n      email\n    }\n  }\n": typeof types.HomeDocument,
+    "\n  mutation CreateTestCheckoutSession {\n    createTestCheckoutSession\n  }\n": typeof types.CreateTestCheckoutSessionDocument,
+    "\n  query CheckoutStatus($id: ID!) {\n    checkoutSessionStatus(id: $id)\n  }\n": typeof types.CheckoutStatusDocument,
+    "\n  query Home {\n    version\n    health\n    appEnv\n    viewer {\n      email\n    }\n    stripeEvents(limit: 1) {\n      type\n      receivedAt\n    }\n  }\n": typeof types.HomeDocument,
 };
 const documents: Documents = {
-    "\n  query Home {\n    version\n    health\n    appEnv\n    viewer {\n      email\n    }\n  }\n": types.HomeDocument,
+    "\n  mutation CreateTestCheckoutSession {\n    createTestCheckoutSession\n  }\n": types.CreateTestCheckoutSessionDocument,
+    "\n  query CheckoutStatus($id: ID!) {\n    checkoutSessionStatus(id: $id)\n  }\n": types.CheckoutStatusDocument,
+    "\n  query Home {\n    version\n    health\n    appEnv\n    viewer {\n      email\n    }\n    stripeEvents(limit: 1) {\n      type\n      receivedAt\n    }\n  }\n": types.HomeDocument,
 };
 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query Home {\n    version\n    health\n    appEnv\n    viewer {\n      email\n    }\n  }\n"): typeof import('./graphql').HomeDocument;
+export function graphql(source: "\n  mutation CreateTestCheckoutSession {\n    createTestCheckoutSession\n  }\n"): typeof import('./graphql').CreateTestCheckoutSessionDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query CheckoutStatus($id: ID!) {\n    checkoutSessionStatus(id: $id)\n  }\n"): typeof import('./graphql').CheckoutStatusDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query Home {\n    version\n    health\n    appEnv\n    viewer {\n      email\n    }\n    stripeEvents(limit: 1) {\n      type\n      receivedAt\n    }\n  }\n"): typeof import('./graphql').HomeDocument;
 
 
 export function graphql(source: string) {

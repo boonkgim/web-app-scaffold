@@ -3,6 +3,7 @@ import { resolvers } from "./schema/resolvers.generated";
 import { typeDefs } from "./schema/typeDefs.generated";
 import { corsFor } from "./cors";
 import { createAuth, isAuthPath } from "./auth";
+import { handleStripeWebhook, isStripeWebhookPath } from "./stripe-webhook";
 import type { Env } from "./context";
 
 export type { Env };
@@ -24,9 +25,14 @@ const yoga = createYoga<Env>({
   cors: (_request, env) => corsFor(env as Env),
 });
 
-// Better Auth owns everything under its basePath; Yoga owns the rest. Auth is a set of
-// HTTP endpoints, not a GraphQL concern — behind a mutation it would mean
-// re-implementing its cookie handling in a resolver.
+// Better Auth owns everything under its basePath, Stripe's webhook owns one path, and
+// Yoga owns the rest. Both are sets of HTTP endpoints rather than GraphQL concerns:
+// auth behind a mutation would mean re-implementing its cookie handling in a resolver,
+// and a webhook behind one would mean verifying a signature over a body Yoga had
+// already parsed and re-serialised.
+//
+// The webhook branch also sits ahead of Yoga's CORS: corsFor names browser origins, and
+// Stripe sends no Origin at all.
 //
 // ctx is optional because the unit tests call this with two arguments — and spread
 // rather than passed, because Yoga's rest parameter is `Partial<Env>[]` and takes no
@@ -40,6 +46,8 @@ export default {
     ctx?: ExecutionContext,
   ): Response | Promise<Response> {
     if (isAuthPath(request.url)) return createAuth(env).handler(request);
+    if (isStripeWebhookPath(request.url))
+      return handleStripeWebhook(request, env);
     return yoga.fetch(request, env, ...(ctx ? [ctx] : []));
   },
 };

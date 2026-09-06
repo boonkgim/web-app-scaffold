@@ -12,9 +12,15 @@ description: Change the cc4-test GraphQL API in apps/graphql — SDL schema modu
   `src/schema/schema.generated.graphqls` — the published artifact `apps/web` types itself
   against.
 - **A new feature gets a new module directory, not a line in someone else's.**
-  `system/` is health/version/appEnv, `mail/` is sendTestEmail, `auth/` is the viewer.
+  `system/` is health/version/appEnv, `mail/` is sendTestEmail, `auth/` is the viewer,
+  `payments/` is checkout, session status, and the event list.
 - **This Worker also serves Better Auth**, at `authOptions.basePath` — `src/index.ts`
   routes there before Yoga. Read the `auth` skill before touching `src/auth*.ts`.
+- **It also serves Stripe's webhook**, at `STRIPE_WEBHOOK_PATH`, routed in the same place
+  and ahead of CORS — Stripe sends no Origin. Read the `payments` skill before touching
+  `src/stripe*.ts`.
+- **Resolvers import drizzle operators from `@cc4-test/db`, not `drizzle-orm`.** This app has
+  no drizzle dependency; `packages/db` re-exports what a resolver needs.
 - **Never hand-write a file under `src/schema/*/resolvers/`.** The codegen preset owns that
   tree and re-annotates every file in it via ts-morph on each run. **If the resolver file
   isn't there, you haven't run codegen yet** — that is the whole failure mode this rule
@@ -65,7 +71,7 @@ New binding in `wrangler.jsonc` → `pnpm cf-typegen` to retype `WorkerEnv`.
   `void` is assignable to `T | null | undefined`. `pnpm test:unit`'s stub scan is the only
   thing that catches it. `viewer` is the first such field.
 - `wrangler.jsonc` carries production-only `vars` — today `CORS_ORIGINS`, `APP_ENV`, the
-  mail keys and `BETTER_AUTH_URL`. `wrangler dev` overlays `.env.development` on top, which
+  mail keys, `WEB_ORIGIN` and `STRIPE_MODE`. `wrangler dev` overlays `.env.development` on top, which
   is what keeps a localhost origin out of the deployed allowlist. Don't merge the two. Any
   binding whose id Cloudflare hands out is added to this file by hand, which is why
   `scripts/docs-check.ignore` baselines it.
@@ -82,6 +88,10 @@ New binding in `wrangler.jsonc` → `pnpm cf-typegen` to retype `WorkerEnv`.
   and then reading unscoped stays correct only until someone refactors the filter. Fail
   identically for "no such account" and "no grant on it": two distinguishable errors are an
   enumeration oracle. The `auth` skill holds the check itself.
+- **A public list field needs its own ceiling.** An SDL default is a default, not a limit —
+  clamp the argument in the resolver, as `stripeEvents` does.
+- **Prefer an enum to a String for a closed set.** `CheckoutStatus` is three values, so the
+  web layer gets an exhaustive union and a fourth state becomes a compile error there.
 
 ## Enforced elsewhere
 
@@ -93,4 +103,5 @@ New binding in `wrangler.jsonc` → `pnpm cf-typegen` to retype `WorkerEnv`.
   headers a browser would receive rather than as a function returning an object.
 - This package's `integration` vitest project (`src/**/*.int.test.ts`) runs the real Worker
   against real Postgres: `src/index.int.test.ts` (Slice 3) and `src/auth.int.test.ts`
-  (Slice 6). Both need `docker compose up -d`.
+  (Slice 6) and `src/stripe-webhook.int.test.ts` (Slice 7). All need
+  `docker compose up -d`.

@@ -15,6 +15,13 @@ description: Change the cc4-test database schema in packages/db — tables, colu
   then `generate` + `migrate` as below. See the `auth` skill.
 - **Never:** `apps/web` must not import `@cc4-test/db` — only the API Worker does. The
   dependency graph is the architecture; web reaches data through the API or not at all.
+- **`stripeEvent` is keyed on Stripe's event id**, not a serial. That is not a style
+  choice — the conflict on re-insert is the webhook's whole idempotency mechanism. See
+  the `payments` skill before changing its key or adding a payload column.
+- **This package owns `drizzle-orm`, and re-exports its operators** (`eq`, `desc`, `and`, …)
+  from `src/index.ts`. `apps/graphql` does not depend on drizzle-orm, so a resolver writing
+  `import { eq } from "drizzle-orm"` does not resolve. Add to the re-export list rather than
+  adding a second direct dependency — one owner, one version.
 - **Never:** migrations do not run from a Worker. They run from your machine via
   drizzle-kit, against a direct connection — never through Hyperdrive.
 
@@ -54,4 +61,3 @@ accident.
 - A health check must query an actual table rather than just construct a client: node-postgres
   opens no socket until a query runs, so a check that stopped at `createDb(...)` would report
   healthy against a database that does not exist.
-

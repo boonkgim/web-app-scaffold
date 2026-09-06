@@ -14,6 +14,10 @@ description: Change the cc4-test Next.js app in apps/web — pages, components, 
 - **`src/app/api/auth/[...all]/route.ts` is a transparent proxy to the API Worker**, and the
   browser must never call the API's own origin. Read the `auth` skill before touching it,
   `src/lib/auth-client.ts`, or `apiFetch`.
+- **`src/app/actions.ts` holds server actions**, which run in this Worker and reach the API
+  the same way a page does. Never import `stripe` — the server SDK — anywhere in this app;
+  `@stripe/stripe-js` and `@stripe/react-stripe-js` are the browser half and are fine. Read
+  the `payments` skill.
 - **This is not the Next.js you know.** Next 16 has breaking changes against training data:
   read the relevant guide in `node_modules/next/dist/docs/` before reaching for an API from
   memory. `export const dynamic` is gone — `connection()` replaces it.
@@ -84,8 +88,24 @@ const res = await graphqlFetch(HomeQuery);
   (`process.env.NEXT_PUBLIC_APP_ENV`). `process.env[name]` and destructuring are not
   inlined by `next build` and arrive `undefined` in the browser. Nothing secret ever gets
   the `NEXT_PUBLIC_` prefix.
+- **This app has no `.env.local`, on purpose.** Next reads
+  `process.env > .env.<mode>.local > .env.local > .env.<mode> > .env`, so `.env.local` is
+  loaded in _both_ modes and outranks `.env.production` — a development value then wins
+  silently in a production build. Use `.env.development` and `.env.production`.
+- **`pnpm preview` is a production build**, so it reads `.env.production`, exactly as
+  `pnpm deploy:production` does. No filename separates the two; only `process.env` does,
+  which is how both scripts override `NEXT_PUBLIC_APP_ENV`. Never put a production
+  credential in `.env.production` on a working copy — a live publishable key there is a
+  live payment form on localhost.
 - A client-side sign-in does not re-render a server component. `router.refresh()` is what
   makes a server-read `viewer` catch up.
+- **A server action that redirects must call `redirect()` outside any `try`.** It signals by
+  throwing, so a catch around it turns the navigation into a silent no-op.
+- **An action called from a client component is just a promise.** Its rejection is the
+  caller's to render — a third-party widget will not do it for you. See `CheckoutForm`.
+- **`Button` is Base UI, so composition is `render={<Link … />}`, not `asChild`** — and
+  rendering anything that is not a `<button>` needs `nativeButton={false}` with it, or the
+  primitive warns that it applied native button semantics to an element that has none.
 - New binding in `wrangler.jsonc` → `pnpm cf-typegen`.
 - `next dev` rewrites the rules block in `AGENTS.md`. Committing that with your work keeps
   the tree clean; removing it just re-creates the uncommitted change.

@@ -11,7 +11,7 @@ const WEB = "http://localhost:3000";
 // clone does not have.
 const env = {
   HYPERDRIVE: { connectionString: CONNECTION },
-  BETTER_AUTH_URL: WEB,
+  WEB_ORIGIN: WEB,
   BETTER_AUTH_SECRET: "integration-test-secret-not-used-anywhere-else",
   MAIL_TRANSPORT: "log",
   MAIL_FROM: "cc4-test <no-reply@example.test>",

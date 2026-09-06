@@ -22,6 +22,17 @@ export default defineConfig({
           name: "unit",
           include: ["src/**/*.test.ts"],
           exclude: ["**/*.int.test.ts"],
+          // src/lib/stripe.ts calls loadStripe at module scope behind the same guard
+          // it exports, so importing it to test that guard runs it. Vitest reads no
+          // env file, and next build's inlining is not in play here -- without a
+          // value the module throws before a single test is collected.
+          //
+          // A literal pk_test_ key and not the real one: nothing here reaches Stripe,
+          // and a test that needs a credential is a test a fresh clone cannot run.
+          env: {
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
+              "pk_test_unit_tests_never_call_stripe",
+          },
         },
       },
       {

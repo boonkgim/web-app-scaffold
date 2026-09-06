@@ -15,7 +15,10 @@ import type { Env } from "./context";
  *  to a host the app is not served from.
  */
 export function createAuth(env: Env) {
-  const webOrigin = requireEnv(env, "BETTER_AUTH_URL");
+  // WEB_ORIGIN, not BETTER_AUTH_URL: Slice 7 needs this same origin for Stripe's
+  // return URL, and one fact under two names disagrees with itself the first time
+  // either moves. The name says what the value is, not which library first wanted it.
+  const webOrigin = requireEnv(env, "WEB_ORIGIN");
 
   return betterAuth({
     // The sender is passed in rather than declared in auth-options.ts because it needs

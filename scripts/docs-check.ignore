@@ -34,3 +34,9 @@ apps/graphql/.env.development  # permanent: gitignored and holds secrets, append
 # and wrong "not built yet". Delete the line if you take Slice 6's email + password
 # variant, which restores the file — a baseline entry that mismatches nothing fails.
 packages/email/emails/verify-email.tsx  # retired by Slice 6's rename
+
+# Permanent, and for the same reason as apps/graphql/.env.development above: from Slice 7
+# this file holds NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, which is account-specific. Slice 1
+# wrote it whole; Slice 7 appends a fragment by hand and hands it back. It is public as
+# keys go, but it is still yours — a heredoc would either overwrite it or commit one.
+apps/web/.env.development  # permanent: gitignored and holds an account key, appended by hand

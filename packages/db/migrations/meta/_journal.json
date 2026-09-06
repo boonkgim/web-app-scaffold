@@ -15,6 +15,13 @@
       "when": 1788671691004,
       "tag": "0001_natural_blur",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788673585379,
+      "tag": "0002_faulty_darkstar",
+      "breakpoints": true
     }
   ]
 }

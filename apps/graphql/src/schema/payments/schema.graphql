@@ -1,13 +1,3 @@
-"""
-Stripe's three terminal session states, narrowed to an enum so the web layer gets an
-exhaustive union rather than a string it has to guess the domain of.
-"""
-enum CheckoutStatus {
-  COMPLETE
-  EXPIRED
-  OPEN
-}
-
 type Mutation {
   """
   Creates an embedded Stripe Checkout Session for one fixed test item and returns its
@@ -15,46 +5,39 @@ type Mutation {
   pipeline in production; not part of any feature.
   """
   createTestCheckoutSession: String!
-
-  """
-  Sends the verification template to an address on MAIL_TEST_RECIPIENTS.
-  Exists to prove the mail pipeline in production; not part of any feature.
-  """
-  sendTestEmail(to: String!): Boolean!
 }
 
 type Query {
-  appEnv: String!
-
   """
   The status of a Checkout Session, read back from Stripe by id. The id comes off the
   return URL, so it is a claim until this field checks it — never a fact the browser
   is allowed to assert.
   """
   checkoutSessionStatus(id: ID!): CheckoutStatus!
-  health: String!
 
   """
   Stripe events this API has accepted, newest first. The webhook is the only writer, so
   an empty list means nothing has been delivered — not that nothing has been paid.
   """
   stripeEvents(limit: Int! = 5): [StripeEvent!]!
-  version: String!
-  viewer: Viewer
+}
+
+"""
+Stripe's three terminal session states, narrowed to an enum so the web layer gets an
+exhaustive union rather than a string it has to guess the domain of.
+"""
+enum CheckoutStatus {
+  OPEN
+  COMPLETE
+  EXPIRED
 }
 
 type StripeEvent {
   id: ID!
-
+  type: String!
   """
   ISO 8601, in UTC. A String rather than a scalar, because this schema has no custom
   scalars and one added for a single field is a contract to maintain for a timestamp.
   """
   receivedAt: String!
-  type: String!
-}
-
-type Viewer {
-  email: String!
-  id: ID!
 }

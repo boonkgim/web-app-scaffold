@@ -101,8 +101,9 @@ failure mode — everything typechecks and the runtime queries a column that doe
   Never add a plugin to `src/auth.ts` directly — it will be missing from the generator.
 - **The client's plugin list must mirror the server's.** `magicLinkClient()` missing from
   `src/lib/auth-client.ts` does not fail to compile; it makes `signIn.magicLink` undefined.
-- **`BETTER_AUTH_URL` is the web origin**, never this Worker's. It is what Better Auth
-  validates the browser's `Origin` against, and what `trustedOrigins` is built from.
+- **`WEB_ORIGIN` is the web origin**, never this Worker's. It is what Better Auth validates
+  the browser's `Origin` against, what `trustedOrigins` is built from, and — since Slice 7 —
+  where Stripe Checkout returns the visitor. One value, one name.
 - **`BETTER_AUTH_SECRET` is a secret, not a var**: `wrangler secret put` in production,
   `.env.development` locally, different values. A shared key makes a local session valid in
   production.
@@ -112,7 +113,7 @@ failure mode — everything typechecks and the runtime queries a column that doe
 - **Requesting a link issues no session.** UI that assumes a signed-in user after the form is
   submitted is wrong; say a mail is on its way and nothing more.
 - **The link is built from `baseURL`**, so it lands on the web origin and is proxied back.
-  Nothing works if `BETTER_AUTH_URL` names the API Worker — it mails a dead link.
+  Nothing works if `WEB_ORIGIN` names the API Worker — it mails a dead link.
 - **`MAIL_TRANSPORT=log` prints the link** (`url=` on the `[mail:log]` line). That is how you
   sign in locally, and how the integration tests do it. Never on the `resend` branch.
 - Changing the route prefix means changing `authOptions.basePath` **and** the
@@ -129,4 +130,3 @@ failure mode — everything typechecks and the runtime queries a column that doe
 - `apps/web/src/lib/api.test.ts` pins cookie forwarding and both proxy branches. The
   production case asserts global `fetch` was _not_ called — the bug that would send session
   traffic out of Cloudflare's network.
-

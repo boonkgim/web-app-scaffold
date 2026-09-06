@@ -28,7 +28,12 @@
     "MAIL_TEST_RECIPIENTS": "you@example.com",
     // The origin the browser sees. Not this Worker's own URL — Better Auth validates
     // the request's Origin against this, so pointing it here rejects the proxy.
-    "BETTER_AUTH_URL": "https://web-app-scaffold-web.yoursubdomain.workers.dev",
+    // Renamed from BETTER_AUTH_URL in Slice 7: same value, same reason it must be the
+    // web origin; now also the host Stripe returns the visitor to after Checkout.
+    "WEB_ORIGIN": "https://web-app-scaffold-web.yoursubdomain.workers.dev",
+    // test or live. Deployed value, and the one var in this file worth reading twice:
+    // src/stripe.ts refuses to start if the deployed key disagrees with it.
+    "STRIPE_MODE": "test",
   },
   // The pooler that fronts packages/db's Postgres for this Worker. Configured here
   // rather than in the database slice because it is the object that *joins* the two:
