@@ -25,8 +25,18 @@
     "typecheck": { "dependsOn": ["^build", "codegen", "^codegen"] },
     "lint": { "dependsOn": ["codegen", "^codegen"] },
     "format": { "cache": false },
-    "test": { "dependsOn": ["^build", "^codegen"] },
+    "test": { "dependsOn": ["^build", "^codegen"], "env": ["DATABASE_URL"] },
     "test:unit": { "dependsOn": ["^build", "^codegen"] },
-    "test:integration": { "dependsOn": ["^build", "^codegen"], "cache": false }
+    // `env` is what lets DATABASE_URL reach the test process. Turbo runs tasks in a
+    // filtered environment, so without this line the variable is silently dropped and
+    // the tests fall back to the Docker default in their own source — meaning
+    // `DATABASE_URL=… pnpm test:integration` from the root quietly tests the wrong
+    // database rather than failing. It is not listed on test:unit, which must not read
+    // it at all.
+    "test:integration": {
+      "dependsOn": ["^build", "^codegen"],
+      "cache": false,
+      "env": ["DATABASE_URL"]
+    }
   }
 }
