@@ -1,0 +1,39 @@
+{
+  "name": "@cc4-test/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy:production": "opennextjs-cloudflare build && opennextjs-cloudflare deploy -- --env-file .env.production",
+    "codegen": "next typegen && wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "cf-typegen": "pnpm run codegen"
+  },
+  "dependencies": {
+    "@opennextjs/cloudflare": "^1.20.6",
+    "next": "16.3.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "catalog:",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "catalog:",
+    "eslint-config-next": "16.3.4",
+    "tailwindcss": "^4",
+    "typescript": "catalog:",
+    "vitest": "^5.0.0",
+    "wrangler": "^4.129.0"
+  },
+  "type": "module"
+}
