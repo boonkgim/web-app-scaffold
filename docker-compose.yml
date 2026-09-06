@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:18
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cc4-test
+    # /var/lib/postgresql, NOT /var/lib/postgresql/data. Postgres 18 changed where the
+    # image puts its data: PGDATA moved to a major-versioned subdirectory
+    # (/var/lib/postgresql/18/docker) so `pg_upgrade --link` can work across majors
+    # without crossing a mount boundary. Mount the pre-18 path on 18 and the container
+    # exits 1 on first start with a wall of text about pg_upgrade — NOT an
+    # obviously-wrong-volume error, so it reads as a broken image rather than a wrong
+    # line. See docker-library/postgres#1259.
+    volumes:
+      - pgdata:/var/lib/postgresql
+    # So `docker compose up -d --wait` can block until Postgres actually accepts
+    # connections. Without it `pnpm start` races: the container is "up" some seconds
+    # before the socket answers, and the migrate step right after it fails.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+volumes:
+  pgdata:

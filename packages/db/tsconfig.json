@@ -1,0 +1,9 @@
+{
+  "extends": "../../packages/config/tsconfig.base.json",
+  // drizzle-orm ships .d.ts for every dialect it supports — gel, mysql2, and others
+  // whose driver packages we deliberately do not install, since we only use pg. Those
+  // declarations fail to resolve their own imports, so checking them is checking
+  // dependencies we will never load. The API Worker sets the same flag for its own reason.
+  "compilerOptions": { "skipLibCheck": true },
+  "include": ["src"]
+}

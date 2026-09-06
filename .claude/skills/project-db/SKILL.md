@@ -1,0 +1,53 @@
+---
+name: project-db
+description: Change the cc4-test database schema in packages/db — tables, columns, indexes, migrations. Use when a feature needs new or changed data. Covers Drizzle schema edits, drizzle-kit generate/migrate, reviewing generated SQL before applying it, and the local Docker Postgres.
+---
+
+# db layer — `packages/db`
+
+## Owns / never touches
+
+- **Owns:** `src/schema.ts` is the source of truth for every table. Nothing else defines
+  one. Also owns `migrations/` and the client factory in `src/client.ts`.
+- **Never:** `apps/web` must not import `@cc4-test/db` — only the API Worker does. The
+  dependency graph is the architecture; web reaches data through the API or not at all.
+- **Never:** migrations do not run from a Worker. They run from your machine via
+  drizzle-kit, against a direct connection — never through Hyperdrive.
+
+## Drizzle mechanics
+
+```bash
+docker compose up -d                        # local Postgres — port 5434, not 5432
+pnpm --filter @cc4-test/db generate        # writes migrations/NNNN_name.sql + snapshot
+#   ↳ READ THE GENERATED SQL NOW
+pnpm --filter @cc4-test/db migrate         # applies to local Docker via .env.development
+```
+
+`migrate:production` is a separate deliberate command run at deploy time, not here — the
+`:production` suffix selects `.env.production` (the Neon **direct/unpooled** URL, under the
+same `DATABASE_URL` key) and is what makes a destructive command impossible to type by
+accident.
+
+## Judgment calls
+
+- **Read the generated SQL before migrating.** This is the step that gets skipped, and it
+  is the only place a data-loss migration is visible before it runs.
+- **A column rename generates as `DROP` + `ADD`** — the data goes with it. Prefer additive
+  changes. If you genuinely need a rename that preserves data, hand-edit the generated SQL
+  to `ALTER TABLE … RENAME COLUMN` _before_ running `migrate`.
+- **Never edit a migration that has already been applied anywhere** — local or production.
+  Write a new one. The applied set is tracked in the database, so an edited file silently
+  diverges from what's actually deployed.
+- `migrations/meta/` is drizzle's own state (snapshots + `_journal.json`). Never hand-edit
+  it; it is what `generate` diffs against to decide what changed.
+- Adding an env key means updating `.env.example` in the same change — it is the only
+  committed env file and holds dummy values.
+
+## Enforced elsewhere
+
+- Integration tests hit a real database: `*.int.test.ts` (`src/client.int.test.ts`), run by
+  `pnpm test:integration`. They need `docker compose up -d` first and are not cached.
+- A health check must query an actual table rather than just construct a client: node-postgres
+  opens no socket until a query runs, so a check that stopped at `createDb(...)` would report
+  healthy against a database that does not exist.
+

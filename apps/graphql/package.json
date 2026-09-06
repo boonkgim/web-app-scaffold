@@ -20,6 +20,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@cc4-test/db": "workspace:*",
     "graphql": "^17.0.2",
     "graphql-yoga": "^5.22.0"
   },

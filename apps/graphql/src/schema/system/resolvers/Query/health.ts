@@ -1,7 +1,15 @@
+import { createDb, items } from "@cc4-test/db";
 import type { QueryResolvers } from "./../../../types.generated";
 
-// Provisional: answers from the Worker itself, because there is nothing behind it yet.
-// What it proves is still real — that a request reached this Worker, through the
-// service binding, and came back typed. The slice that adds a database rewrites this
-// body to query one, and that rewrite is the whole of its integration proof.
-export const health: NonNullable<QueryResolvers["health"]> = () => "ok";
+// Reads the migrated table rather than just constructing a client. Building a Pool
+// opens no socket, so a health check that skipped this query would pass against a
+// database that does not exist. Integration-only by construction.
+export const health: NonNullable<QueryResolvers["health"]> = async (
+  _parent,
+  _arg,
+  ctx,
+) => {
+  const db = createDb(ctx.HYPERDRIVE.connectionString);
+  await db.select({ id: items.id }).from(items).limit(1);
+  return "ok:db";
+};
