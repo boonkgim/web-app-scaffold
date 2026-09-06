@@ -15,8 +15,15 @@
   // check none is still an unimplemented stub. Without it that import typechecks
   // only by TypeScript walking up to an ancestor node_modules/@types — which works
   // in this workspace today and would break on a clean or hoisting-free install.
+  //
+  // jsx is here for a package this app does not itself write JSX in. @cc4-test/email
+  // exports TypeScript source, not a build, so its render.tsx is compiled by whoever
+  // imports it — and `--jsx is not set` is what tsc says about a file it was handed
+  // rather than one it was asked for. The Worker bundle is unaffected either way;
+  // esbuild reads the extension.
   "compilerOptions": {
     "skipLibCheck": true,
+    "jsx": "react-jsx",
     "types": ["node"]
   },
   "include": ["src"]

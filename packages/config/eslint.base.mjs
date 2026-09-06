@@ -18,6 +18,8 @@ export default tseslint.config(
       "**/.open-next/**",
       "**/.turbo/**",
       "**/.wrangler/**",
+      // The react-email CLI's build directory — a generated Next.js app, see Slice 5.
+      "**/.react-email/**",
       "**/dist/**",
       // Two shapes, because the two codegen configs disagree on naming: apps/web's
       // client preset writes a src/generated/ directory, while apps/graphql's server

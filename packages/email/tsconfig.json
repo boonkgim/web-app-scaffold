@@ -1,0 +1,11 @@
+{
+  "extends": "../../packages/config/tsconfig.base.json",
+  // Templates are React components, so JSX has to compile. react-jsx needs no React
+  // import in scope. skipLibCheck for the same reason apps/graphql needs it: the
+  // renderer's types reach react-dom/server, which force-loads the DOM lib.
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "skipLibCheck": true
+  },
+  "include": ["src", "emails"]
+}

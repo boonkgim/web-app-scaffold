@@ -38,7 +38,13 @@ allowBuilds:
 # behind the runtime, which under-declares newer APIs and mistypes changed ones.
 # Track the newest release of the Node major this repo runs, not npm's `latest`:
 # @types/node ships majors for Node versions you are not on.
+#
+# react/react-dom are exact, not ranged: apps/web takes what Next pinned and
+# packages/email must match it. Two resolutions means two React copies, which
+# renders nothing and explains nothing.
 catalog:
   typescript: ^6.0.3
   eslint: ^10.10.0
   "@types/node": ^24.13.3
+  react: 19.2.8
+  react-dom: 19.2.8

@@ -2,6 +2,9 @@ import { GraphQLResolveInfo } from "graphql";
 import { Env } from "../context";
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null | undefined;
+export type RequireFields<T, K extends keyof T> = Omit<T, K> & {
+  [P in K]-?: NonNullable<T[P]>;
+};
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: { input: string; output: string };
@@ -9,6 +12,19 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean };
   Int: { input: number; output: number };
   Float: { input: number; output: number };
+};
+
+export type Mutation = {
+  __typename?: "Mutation";
+  /**
+   * Sends the verification template to an address on MAIL_TEST_RECIPIENTS.
+   * Exists to prove the mail pipeline in production; not part of any feature.
+   */
+  sendTestEmail: Scalars["Boolean"]["output"];
+};
+
+export type MutationsendTestEmailArgs = {
+  to: Scalars["String"]["input"];
 };
 
 export type Query = {
@@ -137,16 +153,31 @@ export type DirectiveResolverFn<
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
-  String: ResolverTypeWrapper<Scalars["String"]["output"]>;
+  Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
   Boolean: ResolverTypeWrapper<Scalars["Boolean"]["output"]>;
+  String: ResolverTypeWrapper<Scalars["String"]["output"]>;
+  Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
-  Query: Record<PropertyKey, never>;
-  String: Scalars["String"]["output"];
+  Mutation: Record<PropertyKey, never>;
   Boolean: Scalars["Boolean"]["output"];
+  String: Scalars["String"]["output"];
+  Query: Record<PropertyKey, never>;
+};
+
+export type MutationResolvers<
+  ContextType = Env,
+  ParentType extends ResolversParentTypes["Mutation"] =
+    ResolversParentTypes["Mutation"],
+> = {
+  sendTestEmail?: Resolver<
+    ResolversTypes["Boolean"],
+    ParentType,
+    ContextType,
+    RequireFields<MutationsendTestEmailArgs, "to">
+  >;
 };
 
 export type QueryResolvers<
@@ -160,5 +191,6 @@ export type QueryResolvers<
 };
 
 export type Resolvers<ContextType = Env> = {
+  Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
 };

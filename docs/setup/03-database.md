@@ -723,6 +723,29 @@ accident.
 EOF
 ````
 
+## The package map
+
+`CLAUDE.md` gains the package and a pointer to the skill this slice just wrote, matching what
+Slices 2 and 4 did for the two apps. Without it the operating manual above is unreachable: a
+session that has not been told the database layer exists has no path from `CLAUDE.md` to
+`.claude/skills/project-db/SKILL.md`, and the rule most worth reaching — `apps/web` never
+imports this package — is stated only there.
+
+```diff
+--- CLAUDE.md
++- `packages/db` — Drizzle schema, migrations and the client factory. Postgres in Docker
++  locally, Neon through Hyperdrive in production. `apps/graphql` is its only consumer;
++  `apps/web` never imports it. See `.claude/skills/project-db/SKILL.md`.
+ - `packages/config` — shared tsconfig and ESLint base, extended by every package.
+```
+
+**Added on 2026-09-06, while building Slice 5, not when this slice ran.** The omission surfaced
+because Slice 5's own `CLAUDE.md` hunk had to anchor next to the `packages/config` line and the
+`packages/db` entry that should have preceded it was not there. Recording it here rather than
+in Slice 5 is what keeps `docs:check` honest: the hunk belongs to the slice that built the
+package, and filing it under Slice 5 would have left this plan describing a repo it no longer
+matched.
+
 ## Sources
 
 The documentation this slice's §3 research rests on — kept here rather than in a shared

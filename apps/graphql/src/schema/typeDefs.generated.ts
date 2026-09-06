@@ -4,6 +4,42 @@ export const typeDefs = {
   definitions: [
     {
       kind: "ObjectTypeDefinition",
+      name: { kind: "Name", value: "Mutation" },
+      fields: [
+        {
+          kind: "FieldDefinition",
+          description: {
+            kind: "StringValue",
+            value:
+              "Sends the verification template to an address on MAIL_TEST_RECIPIENTS.\nExists to prove the mail pipeline in production; not part of any feature.",
+            block: true,
+          },
+          name: { kind: "Name", value: "sendTestEmail" },
+          arguments: [
+            {
+              kind: "InputValueDefinition",
+              name: { kind: "Name", value: "to" },
+              type: {
+                kind: "NonNullType",
+                type: {
+                  kind: "NamedType",
+                  name: { kind: "Name", value: "String" },
+                },
+              },
+            },
+          ],
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" },
+            },
+          },
+        },
+      ],
+    },
+    {
+      kind: "ObjectTypeDefinition",
       name: { kind: "Name", value: "Query" },
       fields: [
         {
@@ -48,6 +84,14 @@ export const typeDefs = {
           kind: "OperationTypeDefinition",
           type: { kind: "NamedType", name: { kind: "Name", value: "Query" } },
           operation: "query",
+        },
+        {
+          kind: "OperationTypeDefinition",
+          type: {
+            kind: "NamedType",
+            name: { kind: "Name", value: "Mutation" },
+          },
+          operation: "mutation",
         },
       ],
     },

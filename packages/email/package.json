@@ -1,0 +1,31 @@
+{
+  "name": "@cc4-test/email",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "email:dev": "email dev --dir emails --port 3001"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-email": "^6.9.3",
+    "resend": "^6.26.0"
+  },
+  "devDependencies": {
+    "@react-email/ui": "^6.9.3",
+    "@types/react": "^19.2.18",
+    "typescript": "catalog:",
+    "vitest": "^5.0.0"
+  }
+}

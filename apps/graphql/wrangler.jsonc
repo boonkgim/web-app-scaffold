@@ -21,6 +21,11 @@
     // Plain config, split the same way: a deployed default here, a local override
     // below. What it proves is below, once the client half exists to read it back.
     "APP_ENV": "production",
+    "MAIL_FROM": "cc4-test <onboarding@resend.dev>",
+    "MAIL_TRANSPORT": "resend",
+    // Who sendTestEmail may write to. Fail-closed, like CORS_ORIGINS: an empty list
+    // refuses everything, so a public mutation cannot become an open relay.
+    "MAIL_TEST_RECIPIENTS": "you@example.com",
   },
   // The pooler that fronts packages/db's Postgres for this Worker. Configured here
   // rather than in the database slice because it is the object that *joins* the two:

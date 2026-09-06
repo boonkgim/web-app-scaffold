@@ -8,4 +8,9 @@ pnpm workspace. What is in it:
 - `apps/graphql` — GraphQL Yoga Worker: the SDL modules and the resolvers implementing
   them. `apps/web` reads its merged `schema.generated.graphqls` and reaches it over the
   `API` service binding. See `.claude/skills/project-graphql/SKILL.md`.
+- `packages/db` — Drizzle schema, migrations and the client factory. Postgres in Docker
+  locally, Neon through Hyperdrive in production. `apps/graphql` is its only consumer;
+  `apps/web` never imports it. See `.claude/skills/project-db/SKILL.md`.
+- `packages/email` — React Email templates and the Resend transport. `apps/graphql` is its
+  only consumer. See `.claude/skills/project-email/SKILL.md`.
 - `packages/config` — shared tsconfig and ESLint base, extended by every package.

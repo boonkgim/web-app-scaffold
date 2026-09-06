@@ -5,9 +5,3 @@ type Mutation {
   """
   sendTestEmail(to: String!): Boolean!
 }
-
-type Query {
-  appEnv: String!
-  health: String!
-  version: String!
-}

@@ -21,3 +21,9 @@
 # Nothing to delete when a later var lands; drop it only if the doc ever starts writing
 # the whole file again (it should not).
 apps/graphql/wrangler.jsonc  # permanent: vars are added by hand, never whole-file
+
+# Permanent, and for the same reason as the line above: from Slice 5 this file holds
+# RESEND_API_KEY, so no doc can ever write it whole again — a heredoc would either
+# overwrite your real key or commit one. Slice 2 wrote it; Slice 5 appends a fragment
+# and hands it back. Nothing to delete when a later slice lands.
+apps/graphql/.env.development  # permanent: gitignored and holds secrets, appended by hand
