@@ -155,8 +155,10 @@ per-layer rules.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Security issues: [SECURITY.md](SECURITY.md) —
-please don't open a public issue for those.
+Not accepting pull requests for now — but issues are very welcome, especially the scaffold
+failing on a fresh clone. [CONTRIBUTING.md](CONTRIBUTING.md) documents the repo's
+conventions. For security issues see [SECURITY.md](SECURITY.md), and please don't open a
+public issue for those.
 
 ## Licence
 

@@ -1,7 +1,18 @@
 # Contributing
 
-Thanks for taking an interest. This is a scaffold, so the bar for a change is slightly
-unusual: it has to be right, and it has to stay _explained_.
+> **Not currently accepting pull requests.** This is a young project and I'm not set up to
+> review outside changes yet, so please don't spend an evening on a PR expecting it to be
+> merged. **Issues are very welcome** — bug reports especially, and the scaffold failing on
+> a fresh clone is the most useful thing you can tell me. If this changes, this note goes.
+>
+> If you're forking it for your own project, you don't need any of this — that is what the
+> scaffold is for. The [README](README.md) is your starting point.
+
+The rest of this document is the working reference for the repo's conventions. It applies
+to anyone changing this code, including future me.
+
+This is a scaffold, so the bar for a change is slightly unusual: it has to be right, and it
+has to stay _explained_.
 
 ## Setting up
 
