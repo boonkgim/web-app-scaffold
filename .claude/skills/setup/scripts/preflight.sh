@@ -71,7 +71,7 @@ else
   say_hard docker "not on PATH — https://docs.docker.com/get-docker/"
 fi
 
-printf '\n%sRequired only for cloud provisioning (Phase 4) — safe to skip%s\n' "$BOLD" "$OFF"
+printf '\n%sEverything else — the rename, your own repo, and cloud provisioning%s\n' "$BOLD" "$OFF"
 
 # --- git -------------------------------------------------------------------
 # Soft, not hard: a tarball download has no .git, and everything but the rename script
@@ -80,6 +80,19 @@ if command -v git >/dev/null 2>&1; then
   say_ok git "$(git --version 2>/dev/null | awk '{print $3}')"
 else
   say_soft git "not on PATH — rename.mjs enumerates files with git grep and cannot run without it"
+fi
+
+# --- gh --------------------------------------------------------------------
+# Soft: only Phase 2 uses it, and only to hand the user a repository of their own after
+# detaching from the template. Detaching itself is plain git and needs nothing.
+if command -v gh >/dev/null 2>&1; then
+  if gh auth status >/dev/null 2>&1; then
+    say_ok gh "$(gh --version 2>/dev/null | head -1 | awk '{print $3}') (authenticated)"
+  else
+    say_soft gh "installed but not logged in — run: gh auth login"
+  fi
+else
+  say_soft gh "not on PATH — https://cli.github.com (only needed to create your own repo)"
 fi
 
 # --- openssl ---------------------------------------------------------------
@@ -121,7 +134,7 @@ if [ "$hard_missing" -gt 0 ]; then
 fi
 
 if [ "$soft_missing" -gt 0 ]; then
-  printf '%sLocal bring-up can proceed.%s %d cloud tool(s) missing — install them only if you provision (Phase 4).\n' \
+  printf '%sLocal bring-up can proceed.%s %d optional tool(s) missing — see the notes above; none of them block Phase 3.\n' \
     "$GREEN" "$OFF" "$soft_missing"
 else
   printf '%sAll tools present.%s\n' "$GREEN" "$OFF"

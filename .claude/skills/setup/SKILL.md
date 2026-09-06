@@ -44,6 +44,47 @@ compose plugin. Cloud CLIs are warnings by design.
 
 ## Phase 2 — the project name
 
+### First: whose repository is this?
+
+Do this **before the rename**, because the rename ends in a commit and that commit must not
+be aimed at someone else's repository. `git clone` leaves `origin` on the scaffold with
+`main` tracking it, so the first `git push` afterwards targets the template. Usually that
+fails on permissions — but in a workshop, where attendees are collaborators precisely so
+they can read a private template, it **succeeds and overwrites the scaffold**.
+
+```bash
+git remote -v                 # is origin still the scaffold?
+git log --oneline | wc -l     # how much of someone else's history came along
+```
+
+**Skip this step entirely when `origin` is already theirs.** A repo made with
+`gh repo create --template` (or "Use this template") starts with one fresh commit and its
+own remote — there is nothing attached, and unpicking it would be busywork.
+
+Otherwise ask which they want. Neither is wrong; they differ in what they keep:
+
+| Choice | What it does | Suits |
+| ------ | ------------ | ----- |
+| **Detach, keep history** | `git remote remove origin` | they want the scaffold's build history, and `docs/setup` read as the record of how it was built |
+| **Start fresh** | `rm -rf .git && git init && git add -A && git commit -m "Initial commit"` | they want their own history and their own name on it — the template's commits are authored by someone else |
+
+Then offer them a remote of their own, which is also the safest way to make the old one
+unreachable:
+
+```bash
+gh repo create <name> --private --source=. --remote=origin --push
+```
+
+If they want to pull scaffold updates later, add it back under a name that is not `origin`
+and make it fetch-only, so no branch ever tracks it for push:
+
+```bash
+git remote add template https://github.com/<owner>/web-app-scaffold.git
+git remote set-url --push template DISABLED
+```
+
+### Then: the name
+
 **Ask the user.** Do not infer a name from the directory, the git remote, or anything else
 — this is the one value the whole setup is named after and it must be a decision, not a
 guess. Use `AskUserQuestion` or a plain question, and say what the constraints are: 2–47
