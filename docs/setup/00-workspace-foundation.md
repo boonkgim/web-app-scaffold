@@ -204,18 +204,28 @@ node_modules/
 .cache
 .env*
 !.env.example
-.claude/skills/
+.claude/skills/setup-project
 EOF
 ```
 
-(`.claude/skills/` is this repo's own addition, not part of the reference, and it was added
-in response to what `git add -A` actually staged. The `setup-project` skill is present here as
-a **symlink to an absolute path outside the repo**
+(`.claude/skills/setup-project` is this repo's own addition, not part of the reference, and it
+was added in response to what `git add -A` actually staged. The `setup-project` skill is present
+here as a **symlink to an absolute path outside the repo**
 (`/path/to/agent-skills/setup-project`), and git stores a symlink as its
 target string — so committing it would write one machine's directory layout into the repo and
-hand every other clone a dangling link. Only `skills/` is ignored, not `.claude/` as a whole,
-so a future `.claude/settings.json` that the project genuinely wants shared can still be
-committed.)
+hand every other clone a dangling link.
+
+**Ignore that one path, never `.claude/skills/` as a directory.** This started as the broader
+rule and was narrowed after it did real damage: from Slice 2 onward, each slice writes the
+operating manual for the layer it built into `.claude/skills/project-<layer>/SKILL.md`, and the
+blanket ignore silently kept every one of them out of the repo. Slice 2 committed a `CLAUDE.md`
+pointing at `.claude/skills/project-graphql/SKILL.md` while the file itself was untracked, so a
+fresh clone got the pointer and not the manual. `pnpm docs:check` did not error either — it
+reported the file as `not built yet`, which is a false negative for a slice that _is_ built and
+is exactly the signal that check exists to give. Ignore the symlink; commit the manuals.
+
+Only `setup-project` is ignored, not `.claude/` as a whole, so a future `.claude/settings.json`
+that the project genuinely wants shared can still be committed.)
 
 (Ignore every env file, with exactly one exception: `.env.example`, which holds keys and dummy
 values only. Nothing else in the `.env` family is ever committed — see the convention below

@@ -1692,7 +1692,7 @@ written down here rather than left to be rediscovered.
 
 ````bash
 cd ../..   # to the repo root
-cat > .claude/skills/graphql/SKILL.md <<'EOF'
+cat > .claude/skills/project-graphql/SKILL.md <<'EOF'
 ---
 name: graphql
 description: Change the cc4-test GraphQL API in apps/graphql — SDL schema modules, resolvers, codegen. Use when a feature needs a new field, query, or mutation, or when a resolver must change. Covers the schema module layout, the graphql-codegen server preset that scaffolds resolver files, orphan cleanup, and the Worker context.
@@ -1785,7 +1785,7 @@ preset owns — is one file away rather than restated inline.
  - `apps/web` — Next.js on Cloudflare Workers via OpenNext.
 +- `apps/graphql` — GraphQL Yoga Worker: the SDL modules and the resolvers implementing
 +  them. `apps/web` reads its merged `schema.generated.graphqls` and reaches it over the
-+  `API` service binding. See `.claude/skills/graphql/SKILL.md`.
++  `API` service binding. See `.claude/skills/project-graphql/SKILL.md`.
  - `packages/config` — shared tsconfig and ESLint base, extended by every package.
 ```
 
