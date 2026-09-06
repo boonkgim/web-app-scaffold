@@ -15,7 +15,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "exports": "./src/index.ts",
   "dependencies": {
@@ -27,5 +27,6 @@
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "vitest": "^5.0.0"
-  }
+  },
+  "private": true
 }

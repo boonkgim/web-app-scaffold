@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A second push to the same PR cancels the first run rather than queueing behind it.
+# main is excluded: its runs are the record of what actually landed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lint, typecheck, docs and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      # Full history, so the formatting step below can diff against the base commit.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      # Version comes from .nvmrc, so the toolchain is defined in one place and CI
+      # cannot drift from what contributors run locally.
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # docs/setup is the plan of record; this fails if it and the repo disagree.
+      - run: pnpm docs:check
+
+      # Changed files only, mirroring `format:changed` — NOT `prettier --check .`.
+      # A repo-wide check cannot work here: docs/setup embeds several files verbatim as
+      # heredocs, so reformatting one of those files makes it disagree with the plan and
+      # turns docs:check red. Formatting is therefore owned per-change, and this step
+      # holds the line on what a PR actually touches.
+      - name: Prettier (changed files)
+        run: |
+          base='${{ github.event.pull_request.base.sha || github.event.before }}'
+          # First push to a branch, or a force-push, leaves no usable base.
+          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ] \
+             || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            echo "No usable base commit; skipping the changed-files format check."
+            exit 0
+          fi
+          files=$(git diff --name-only --diff-filter=ACMR "$base" HEAD)
+          if [ -z "$files" ]; then
+            echo "No changed files."
+            exit 0
+          fi
+          echo "$files" | xargs -r pnpm exec prettier --check --ignore-unknown \
+            --ignore-path .gitignore --ignore-path .prettierignore
+
+      - run: pnpm turbo run lint typecheck test:unit
+
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: web-app-scaffold
+        # 5434 on the host to match docker-compose.yml, so DATABASE_URL is the same
+        # string a contributor uses locally.
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 15
+
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5434/web-app-scaffold
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The integration tests read tables, so the schema has to exist first.
+      - run: pnpm --filter @web-app-scaffold/db migrate
+
+      - run: pnpm turbo run test:integration

@@ -1,8 +1,7 @@
 {
   "name": "web-app-scaffold",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A full-stack web app scaffold: Next.js on Cloudflare Workers, a GraphQL Yoga API Worker, Drizzle + Postgres, theming, email, auth and Stripe payments — built one infrastructure slice at a time.",
   "scripts": {
     "test": "turbo run test",
     "dev": "turbo run dev",
@@ -16,9 +15,18 @@
     "docs:check": "node scripts/docs-check.mjs",
     "verify": "pnpm format:changed && pnpm docs:check && turbo run lint typecheck test:unit --filter=\"...[HEAD]\""
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "nextjs",
+    "cloudflare-workers",
+    "graphql",
+    "drizzle",
+    "postgres",
+    "stripe",
+    "scaffold",
+    "monorepo"
+  ],
+  "author": "Khur Boon Kgim",
+  "license": "MIT",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@11.15.1",
@@ -30,5 +38,13 @@
     "prettier": "^3.9.6",
     "turbo": "^2.10.12",
     "typescript": "catalog:"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boonkgim/web-app-scaffold.git"
+  },
+  "bugs": {
+    "url": "https://github.com/boonkgim/web-app-scaffold/issues"
+  },
+  "homepage": "https://github.com/boonkgim/web-app-scaffold#readme"
 }

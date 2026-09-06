@@ -50,5 +50,6 @@
     "vitest": "^5.0.0",
     "wrangler": "^4.129.0"
   },
-  "type": "module"
+  "type": "module",
+  "license": "MIT"
 }

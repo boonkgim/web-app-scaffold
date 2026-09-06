@@ -1,0 +1,26 @@
+version: 2
+updates:
+  # One pnpm workspace: the root manifest covers every package.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # Patch and minor bumps arrive as one PR per ecosystem group rather than a dozen
+    # separate ones. Majors stay separate, because they are the ones worth reading.
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Pinned in pnpm-workspace.yaml's catalog for a documented reason: typescript-eslint
+      # hard-errors on TS 7.x, which takes `pnpm lint` in every package down with it.
+      # Revisit deliberately, not via an automated PR.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

@@ -1,0 +1,43 @@
+name: Feature or change proposal
+description: Suggest something the scaffold should do differently
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is a scaffold, so the bar is a little unusual: a change has to be right for
+        most people starting a project, and it has to stay explained in `docs/setup/`.
+        Additions that only some projects want are often better as documentation than as
+        code everyone inherits.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What is hard, surprising, or wrong today? Lead with the problem, not the solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you propose
+      description: And roughly where it would live in the workspace.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Including doing nothing, and why that is not enough.
+
+  - type: checkboxes
+    id: implications
+    attributes:
+      label: Implications
+      options:
+        - label: This would need a new slice or an amendment in `docs/setup/`
+        - label: This adds a dependency
+        - label: This adds an account-coupled value (which must ship empty and fail closed)
+        - label: This is a breaking change for existing clones
