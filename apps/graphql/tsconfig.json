@@ -1,0 +1,23 @@
+{
+  "extends": "../../packages/config/tsconfig.base.json",
+  // skipLibCheck is load-bearing here, not hygiene: the Workers runtime types
+  // redeclare ~100 globals (Response, WebSocket, crypto, ...) that also exist in
+  // lib.dom.d.ts, which a Yoga dependency (@whatwg-node/server) force-loads via
+  // `/// <reference lib="dom" />` — so narrowing `lib` cannot avoid the collision.
+  // apps/web never hit this because Next.js's own tsconfig sets skipLibCheck.
+  //
+  // Those runtime types are no longer a package. `wrangler types` emits them into
+  // src/worker-env.d.ts alongside WorkerEnv, which `include` already covers, so
+  // there is nothing to list in "types" — that is what replaced the
+  // @cloudflare/workers-types entry, and why the generated file is committed.
+  //
+  // "node" is here for schema.test.ts, which globs the resolver files off disk to
+  // check none is still an unimplemented stub. Without it that import typechecks
+  // only by TypeScript walking up to an ancestor node_modules/@types — which works
+  // in this workspace today and would break on a clean or hoisting-free install.
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["src"]
+}

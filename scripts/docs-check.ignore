@@ -12,3 +12,12 @@
 # An entry is added by the slice that makes it true, never in advance. The check fails on
 # an entry nothing mismatches, and a path no installed slice even describes mismatches
 # nothing — so a baseline written ahead of its slice fails from the moment it is written.
+
+# Permanent, not a to-do: the heredoc earlier in this slice is the last time this file is
+# written whole, and every key after it — CORS_ORIGINS and APP_ENV here, and any later
+# binding carrying an account-specific id — lands as a by-hand fragment instead,
+# because the doc cannot reproduce values Cloudflare hands out. So the repo is always
+# that heredoc plus keys the doc never claimed.
+# Nothing to delete when a later var lands; drop it only if the doc ever starts writing
+# the whole file again (it should not).
+apps/graphql/wrangler.jsonc  # permanent: vars are added by hand, never whole-file

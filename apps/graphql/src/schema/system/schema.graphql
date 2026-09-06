@@ -1,0 +1,5 @@
+type Query {
+  version: String!
+  health: String!
+  appEnv: String!
+}

@@ -5,8 +5,12 @@
   "compatibility_date": "2026-09-03",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  // Slice 1 wrote this binding for Next's image optimizer. It is exactly the key the
+  // warning above is about: this slice has no opinion on it, and a heredoc written from
+  // the reference alone would have silently deleted it. Read before overwriting — done.
   "images": { "binding": "IMAGES" },
   "services": [
     { "binding": "WORKER_SELF_REFERENCE", "service": "cc4-test-web" },
+    { "binding": "API", "service": "cc4-test-graphql" },
   ],
 }
