@@ -79,7 +79,7 @@ both install them, which is the rule as written.
 
 ```bash
 mkdir -p packages/email && cd packages/email && pnpm init
-pnpm pkg set name="@cc4-test/email"
+pnpm pkg set name="@web-app-scaffold/email"
 pnpm pkg set exports="./src/index.ts"
 pnpm pkg delete main
 pnpm add resend react-email
@@ -306,11 +306,11 @@ export function VerifyEmail({ url }: VerifyEmailProps) {
       <Head />
       {/* The inbox line under the subject. Without it clients scrape the first text
           they find, which is usually the heading repeated. */}
-      <Preview>Confirm your cc4-test email address</Preview>
+      <Preview>Confirm your web-app-scaffold email address</Preview>
       <Body style={main}>
         <Container style={container}>
           <Heading>Confirm your email</Heading>
-          <Text>Click the button to confirm this address for cc4-test.</Text>
+          <Text>Click the button to confirm this address for web-app-scaffold.</Text>
           <Button href={url} style={button}>
             Confirm email
           </Button>
@@ -325,7 +325,7 @@ export function VerifyEmail({ url }: VerifyEmailProps) {
 
 // `email dev` renders the default export, with PreviewProps as its sample data.
 VerifyEmail.PreviewProps = {
-  url: "https://cc4-test.example/api/auth/verify-email?token=preview",
+  url: "https://web-app-scaffold.example/api/auth/verify-email?token=preview",
 } satisfies VerifyEmailProps;
 
 export default VerifyEmail;
@@ -358,7 +358,7 @@ export async function renderVerifyEmail(url: string): Promise<RenderedEmail> {
     // The subject lives here rather than in the template: a React component renders a
     // body, and a subject is a header. Keeping them in one function is what stops a
     // template being sent with someone else's subject.
-    subject: "Confirm your cc4-test email address",
+    subject: "Confirm your web-app-scaffold email address",
     html: await render(element),
     text: await render(element, { plainText: true }),
   };
@@ -451,7 +451,7 @@ cat > src/render.test.ts <<'EOF'
 import { expect, test } from "vitest";
 import { renderVerifyEmail } from "./render";
 
-const URL = "https://cc4-test.example/api/auth/verify-email?token=abc123";
+const URL = "https://web-app-scaffold.example/api/auth/verify-email?token=abc123";
 
 test("the html carries the verification link", async () => {
   const { html } = await renderVerifyEmail(URL);
@@ -503,7 +503,7 @@ const message = {
   text: "h",
 };
 const env = (over: Partial<MailEnv>): MailEnv =>
-  ({ MAIL_FROM: "cc4-test <no-reply@example.test>", ...over }) as MailEnv;
+  ({ MAIL_FROM: "web-app-scaffold <no-reply@example.test>", ...over }) as MailEnv;
 
 test("the resend transport posts the rendered message and the configured from", async () => {
   await createMailer(
@@ -512,7 +512,7 @@ test("the resend transport posts the rendered message and the configured from", 
 
   expect(mocks.keys).toContain("re_test");
   expect(mocks.send).toHaveBeenCalledWith({
-    from: "cc4-test <no-reply@example.test>",
+    from: "web-app-scaffold <no-reply@example.test>",
     to: ["someone@example.test"],
     subject: "s",
     html: "<p>h</p>",
@@ -558,7 +558,7 @@ EOF
 
 ```bash
 cd ../../apps/graphql
-pnpm add @cc4-test/email@workspace:*
+pnpm add @web-app-scaffold/email@workspace:*
 ```
 
 The package's `exports` is `./src/index.ts` — source, not a build — so importing it hands this
@@ -569,7 +569,7 @@ here wrote. The flag belongs to the consumer because the compilation does:
 --- apps/graphql/tsconfig.json
    // in this workspace today and would break on a clean or hoisting-free install.
 +  //
-+  // jsx is here for a package this app does not itself write JSX in. @cc4-test/email
++  // jsx is here for a package this app does not itself write JSX in. @web-app-scaffold/email
 +  // exports TypeScript source, not a build, so its render.tsx is compiled by whoever
 +  // imports it — and `--jsx is not set` is what tsc says about a file it was handed
 +  // rather than one it was asked for. The Worker bundle is unaffected either way;
@@ -589,7 +589,7 @@ account-specific Hyperdrive id:
   ...,
   "vars": {
     ...,
-    "MAIL_FROM": "cc4-test <onboarding@resend.dev>",
+    "MAIL_FROM": "web-app-scaffold <onboarding@resend.dev>",
     "MAIL_TRANSPORT": "resend",
     // Who sendTestEmail may write to. Fail-closed, like CORS_ORIGINS: an empty list
     // refuses everything, so a public mutation cannot become an open relay.
@@ -603,7 +603,7 @@ credential, so the doc stops owning it whole:
 
 ```ini
 MAIL_TRANSPORT=log
-MAIL_FROM="cc4-test <onboarding@resend.dev>"
+MAIL_FROM="web-app-scaffold <onboarding@resend.dev>"
 MAIL_TEST_RECIPIENTS=
 # Only needed while you flip MAIL_TRANSPORT to resend for the real-send gate row.
 # RESEND_API_KEY="re_..."
@@ -647,7 +647,7 @@ that tried would be wrong.
  APP_ENV=local
 +# log renders and prints; resend actually sends. Unset is an error, never a fallback.
 +MAIL_TRANSPORT=log
-+MAIL_FROM=cc4-test <onboarding@resend.dev>
++MAIL_FROM=web-app-scaffold <onboarding@resend.dev>
 +MAIL_TEST_RECIPIENTS=
 +# The one key with no counterpart in wrangler.jsonc. Secrets are set with
 +# `wrangler secret put` and stored by Cloudflare; a `vars` entry would be plaintext.
@@ -725,7 +725,7 @@ type Mutation {
   sendTestEmail(to: String!): Boolean!
 }
 EOF
-pnpm turbo codegen --filter @cc4-test/graphql
+pnpm turbo codegen --filter @web-app-scaffold/graphql
 ```
 
 The preset scaffolds under `resolvers/Mutation/` exactly as it does for `Query` — root fields
@@ -733,7 +733,7 @@ are root fields.
 
 ```bash
 cat > src/schema/mail/resolvers/Mutation/sendTestEmail.ts <<'EOF'
-import { createMailer, renderVerifyEmail } from "@cc4-test/email";
+import { createMailer, renderVerifyEmail } from "@web-app-scaffold/email";
 import { GraphQLError } from "graphql";
 import { isAllowedRecipient } from "./../../../../mail";
 import type { MutationResolvers } from "./../../../types.generated";
@@ -748,7 +748,7 @@ export const sendTestEmail: NonNullable<
   // A placeholder link, because nothing in this slice issues real tokens. What is
   // being proven is the pipeline, not the URL.
   const message = await renderVerifyEmail(
-    "https://cc4-test.example/api/auth/verify-email?token=slice-7",
+    "https://web-app-scaffold.example/api/auth/verify-email?token=slice-7",
   );
   await createMailer(ctx).send({ to, ...message });
 
@@ -795,7 +795,7 @@ what tells the person which rows are actually theirs.
 
 **30, not the 32 the reference names.** The reference carries slice 4's total of 22 as this
 slice's baseline; in _this_ repo slice 4 ended at 20, because `packages/db` has an integration
-test and no unit test at all — `pnpm --filter @cc4-test/db test:unit` finds no files and exits
+test and no unit test at all — `pnpm --filter @web-app-scaffold/db test:unit` finds no files and exits
 0 under `passWithNoTests`. The number this slice is actually accountable for is the **delta**,
 and that is unchanged: **+7 in `packages/email`** (3 render, 4 mailer) and **+3 in
 `apps/graphql`** (the allowlist). An absolute total is a fact about one repo; the delta is the
@@ -924,7 +924,7 @@ never imports. Had they been reachable, the number would not be close.
 Against the deployed Worker, not localhost:
 
 ```bash
-curl -s https://cc4-test-graphql.yoursubdomain.workers.dev/graphql \
+curl -s https://web-app-scaffold-graphql.yoursubdomain.workers.dev/graphql \
   -H 'content-type: application/json' \
   -d '{"query":"mutation { sendTestEmail(to: \"you@example.com\") }"}'
 ```
@@ -959,14 +959,14 @@ handed over:
 inbox, and rendering is exactly what inboxes disagree about.
 
 **Two Insights warnings are expected here and are not defects.** `Ensure link URLs match sending
-domain` and `Use a subdomain` fire because the link is `https://cc4-test.example/...` and the
+domain` and `Use a subdomain` fire because the link is `https://web-app-scaffold.example/...` and the
 sender is the shared `onboarding@resend.dev` — both placeholders this slice chooses on purpose,
 and both already named in `Leaves behind`. They clear when a verified domain lands.
 
 **The key was moved without ever being displayed.** Resend renders a new key in an
 `<input type="password">` beside a **Copy to clipboard** button, so it went dashboard → clipboard
 → `wrangler secret put` with only a length (36) and a prefix (`re_`) ever printed, and the
-clipboard cleared afterwards. The key created for this project is named `cc4-test-worker` and is
+clipboard cleared afterwards. The key created for this project is named `web-app-scaffold-worker` and is
 scoped **Sending access**, not Full access.
 
 ### 6. If it fails
@@ -995,7 +995,7 @@ mkdir -p .claude/skills/project-email
 cat > .claude/skills/project-email/SKILL.md <<'EOF'
 ---
 name: project-email
-description: Write or change transactional email in cc4-test — React Email templates in packages/email, the render helpers, and the Resend transport. Use when a feature sends mail, when a template's copy or markup changes, or when the mail transport or sender address changes.
+description: Write or change transactional email in web-app-scaffold — React Email templates in packages/email, the render helpers, and the Resend transport. Use when a feature sends mail, when a template's copy or markup changes, or when the mail transport or sender address changes.
 ---
 
 # email — `packages/email`
@@ -1016,7 +1016,7 @@ description: Write or change transactional email in cc4-test — React Email tem
 # 1. emails/<name>.tsx — a component, plus a default export and PreviewProps
 # 2. src/render.tsx — a render<Name>Email() returning { subject, html, text }
 # 3. export it from src/index.ts
-pnpm --filter @cc4-test/email email:dev      # preview on :3001, not :3000
+pnpm --filter @web-app-scaffold/email email:dev      # preview on :3001, not :3000
 ```
 
 - **Inline styles only.** Email clients strip or ignore `<style>` and there is no cascade.

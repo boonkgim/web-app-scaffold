@@ -33,7 +33,7 @@ export const AUTH_BASE_PATH = "/api/auth";
  */
 export function authOptions(sendMagicLink: SendMagicLink) {
   return {
-    appName: "cc4-test",
+    appName: "web-app-scaffold",
     basePath: AUTH_BASE_PATH,
     plugins: [
       magicLink({

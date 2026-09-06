@@ -46,12 +46,12 @@ both rounds. `USER-SETUP.md` has each, and stays in test mode throughout.
 ## Shape
 
 ```
-browser ──▶ /checkout ──server action──▶ cc4-test-web ──binding──▶ cc4-test-graphql ──▶ Stripe API
+browser ──▶ /checkout ──server action──▶ web-app-scaffold-web ──binding──▶ web-app-scaffold-graphql ──▶ Stripe API
         ◀──────────────── client secret ◀──────────────────────────────────────────────────┘
 browser ──▶ js.stripe.com ──▶ Stripe's form, in an iframe, on our origin
         the page never leaves; the visitor's card details never touch this stack
 
-Stripe ──POST /stripe/webhook──▶ cc4-test-graphql ──▶ Hyperdrive ──▶ Postgres
+Stripe ──POST /stripe/webhook──▶ web-app-scaffold-graphql ──▶ Hyperdrive ──▶ Postgres
         signed; no cookie, no Origin, no proxy
 ```
 
@@ -70,7 +70,7 @@ fails blank rather than loudly.
 
 | Decision                                                            | Why                                                                                                                                                                                                                                                    |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Webhook direct to `cc4-test-graphql`, not through the proxy         | No cookie to keep same-origin. The signature is the authentication, and every extra hop is a chance to alter the bytes it covers.                                                                                                                      |
+| Webhook direct to `web-app-scaffold-graphql`, not through the proxy         | No cookie to keep same-origin. The signature is the authentication, and every extra hop is a chance to alter the bytes it covers.                                                                                                                      |
 | `stripe` with `httpClient: Stripe.createFetchHttpClient()`          | The SDK's default client reaches for `node:https`, which workerd does not provide however `nodejs_compat` is set. It fails at the first call, not at import.                                                                                           |
 | `constructEventAsync` + `createSubtleCryptoProvider()`              | WebCrypto is async, so the synchronous `constructEvent` cannot run here at all.                                                                                                                                                                        |
 | Raw body read once, as text, before anything parses it              | The signature covers the exact bytes sent. `request.json()` consumes the body, and re-serialising the object yields different bytes for the same data.                                                                                                 |
@@ -287,7 +287,7 @@ convenience, and the thing that records money is deliberately independent of it.
 ```bash
 cat > src/stripe-webhook.ts <<'EOF'
 import Stripe from "stripe";
-import { createDb, stripeEvent } from "@cc4-test/db";
+import { createDb, stripeEvent } from "@web-app-scaffold/db";
 import { createStripe, STRIPE_WEBHOOK_PATH } from "./stripe";
 import { requireEnv } from "./env";
 import type { Env } from "./context";
@@ -506,7 +506,7 @@ different one: `corsFor` names browser origins, and Stripe sends no `Origin` at 
     ...,
     // Renamed from BETTER_AUTH_URL. Same value, same reason it must be the web origin;
     // now also the host Stripe returns the visitor to after Checkout.
-    "WEB_ORIGIN": "https://cc4-test-web.yoursubdomain.workers.dev",
+    "WEB_ORIGIN": "https://web-app-scaffold-web.yoursubdomain.workers.dev",
     // test or live. Deployed value, and the one var in this file worth reading twice:
     // src/stripe.ts refuses to start if the deployed key disagrees with it.
     "STRIPE_MODE": "test"
@@ -604,7 +604,7 @@ return `"COMPLETE"`.
 ```
 
 ```bash
-pnpm turbo codegen --filter @cc4-test/graphql
+pnpm turbo codegen --filter @web-app-scaffold/graphql
 ```
 
 ```bash
@@ -638,7 +638,7 @@ export const createTestCheckoutSession: NonNullable<
         price_data: {
           currency: "usd",
           unit_amount: TEST_ITEM_CENTS,
-          product_data: { name: "cc4-test test item" },
+          product_data: { name: "web-app-scaffold test item" },
         },
       },
     ],
@@ -711,7 +711,7 @@ export const checkoutSessionStatus: NonNullable<
 };
 EOF
 cat > src/schema/payments/resolvers/Query/stripeEvents.ts <<'EOF'
-import { createDb, desc, stripeEvent } from "@cc4-test/db";
+import { createDb, desc, stripeEvent } from "@web-app-scaffold/db";
 import type { QueryResolvers } from "./../../../types.generated";
 
 // A ceiling the caller cannot raise. The SDL's default is a default, not a limit, and
@@ -750,10 +750,10 @@ database can show is the accepted one — and that the second copy of an event c
 cat > src/stripe-webhook.int.test.ts <<'EOF'
 import Stripe from "stripe";
 import { expect, test } from "vitest";
-import { createDb, eq, stripeEvent } from "@cc4-test/db";
+import { createDb, eq, stripeEvent } from "@web-app-scaffold/db";
 import worker, { type Env } from "./index";
 
-const DOCKER_URL = "postgres://postgres:postgres@localhost:5434/cc4-test";
+const DOCKER_URL = "postgres://postgres:postgres@localhost:5434/web-app-scaffold";
 const CONNECTION = process.env.DATABASE_URL ?? DOCKER_URL;
 const SECRET = "whsec_integration_test_secret_not_used_anywhere_else";
 
@@ -1256,7 +1256,7 @@ export default function CheckoutPage() {
     <main className="flex flex-1 items-center justify-center p-6">
       <Card className="w-full max-w-xl">
         <CardHeader>
-          <CardTitle>cc4-test test item</CardTitle>
+          <CardTitle>web-app-scaffold test item</CardTitle>
         </CardHeader>
         <CardContent>
           <CheckoutForm />
@@ -1301,7 +1301,7 @@ export const OUTCOMES: Record<CheckoutStatus, Outcome> = {
     title: "Thank you",
     body: "Your payment is complete. Nothing more is needed from you.",
     href: "/",
-    cta: "Back to cc4-test",
+    cta: "Back to web-app-scaffold",
     role: "status",
   },
   // A visitor lands here on a decline too, and the session is still open. Saying so
@@ -1333,7 +1333,7 @@ export const UNREADABLE: Outcome = {
   title: "We could not check that payment",
   body: "This checkout could not be confirmed. Try again from the store.",
   href: "/",
-  cta: "Back to cc4-test",
+  cta: "Back to web-app-scaffold",
   role: "alert",
 };
 EOF
@@ -1651,7 +1651,7 @@ three equality checks:
 ```
 
 ```bash
-pnpm turbo codegen --filter @cc4-test/web
+pnpm turbo codegen --filter @web-app-scaffold/web
 ```
 
 ## Local gate
@@ -1820,7 +1820,7 @@ charges a real card at step 7, which is not what a pipeline proof is for.
 Make both yours:
 
 ```jsonc
-"WEB_ORIGIN": "https://cc4-test-web.yoursubdomain.workers.dev",
+"WEB_ORIGIN": "https://web-app-scaffold-web.yoursubdomain.workers.dev",
 "STRIPE_MODE": "test"
 ```
 
@@ -1877,12 +1877,12 @@ the same `stripe` binary the local gate already uses, no `listen` involved.
 
 ```bash
 stripe webhook_endpoints create \
-  --url https://cc4-test-graphql.yoursubdomain.workers.dev/stripe/webhook \
+  --url https://web-app-scaffold-graphql.yoursubdomain.workers.dev/stripe/webhook \
   --enabled-events checkout.session.completed \
-  --description "cc4-test — Slice 7"
+  --description "web-app-scaffold — Slice 7"
 ```
 
-`cc4-test-graphql`, not `cc4-test-web`: the webhook does not go through the proxy, for the
+`web-app-scaffold-graphql`, not `web-app-scaffold-web`: the webhook does not go through the proxy, for the
 reason at the top of this slice. And one `--enabled-events`, not `'*'` — a subscription to
 everything delivers account-lifecycle noise to a handler that records each item forever, and
 this list is the cheapest place to say what the endpoint is for.
@@ -1921,7 +1921,7 @@ The create response is the `whsec_…`:
   "livemode": false,
   "secret": "whsec_…",
   "status": "enabled",
-  "url": "https://cc4-test-graphql.…workers.dev/stripe/webhook"
+  "url": "https://web-app-scaffold-graphql.…workers.dev/stripe/webhook"
 }
 ```
 
@@ -1939,7 +1939,7 @@ plain JSON with `--color off`:
 
 ```bash
 stripe webhook_endpoints create --color off --confirm \
-  --url https://cc4-test-graphql.yoursubdomain.workers.dev/stripe/webhook \
+  --url https://web-app-scaffold-graphql.yoursubdomain.workers.dev/stripe/webhook \
   --enabled-events checkout.session.completed \
 | jq -r .secret \
 | pnpm wrangler secret put STRIPE_WEBHOOK_SECRET --cwd apps/graphql
@@ -1956,7 +1956,7 @@ Developers → Webhooks → **Add endpoint**, with the test/live toggle set to *
 
 | Field          | Set it to                                                       |
 | -------------- | --------------------------------------------------------------- |
-| Endpoint URL   | `https://cc4-test-graphql.yoursubdomain.workers.dev/stripe/webhook`  |
+| Endpoint URL   | `https://web-app-scaffold-graphql.yoursubdomain.workers.dev/stripe/webhook`  |
 | Listen to      | **Events on your account** — not "Events on Connected accounts" |
 | Events to send | `checkout.session.completed`, and nothing else                  |
 | Version        | leave on the account's default API version                      |
@@ -2097,8 +2097,8 @@ the deploying Cloudflare account:
 
 - `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` both moved by pipe from the Stripe CLI config
   and the endpoint-create response respectively, each behind an assertion, neither rendered.
-  `wrangler secret list` now shows four secrets on `cc4-test-graphql`.
-- Endpoint `we_1UCZ8eBnLSnWkEcoWS7IM8p1` → `https://cc4-test-graphql.yoursubdomain.workers.dev/stripe/webhook`,
+  `wrangler secret list` now shows four secrets on `web-app-scaffold-graphql`.
+- Endpoint `we_1UCZ8eBnLSnWkEcoWS7IM8p1` → `https://web-app-scaffold-graphql.yoursubdomain.workers.dev/stripe/webhook`,
   `livemode: false`, one enabled event, status enabled. `webhook_endpoints list` was checked
   before and after: one pre-existing endpoint on this account belongs to an unrelated project
   (`nanostore-graphql`) at a different URL, so no double-delivery here — but it does receive the
@@ -2110,7 +2110,7 @@ the deploying Cloudflare account:
 - `stripe events resend --webhook-endpoint`: still **one** row, `receivedAt` unchanged at
   `2026-09-06T06:02:48.624Z`.
 - Unsigned `POST` → `400`, `GET` → `405`, against the real public URL.
-- The deployed `/checkout` renders Stripe's form inline on `cc4-test-web.yoursubdomain.workers.dev`,
+- The deployed `/checkout` renders Stripe's form inline on `web-app-scaffold-web.yoursubdomain.workers.dev`,
   TEST MODE, `US$19.00` beside `SGD 25.03` — never `checkout.stripe.com`.
 
 Commit.
@@ -2136,7 +2136,7 @@ mkdir -p .claude/skills/project-payments
 cat > .claude/skills/project-payments/SKILL.md <<'EOF'
 ---
 name: project-payments
-description: Work with Stripe in cc4-test — embedded Checkout Sessions from apps/graphql, the form mounted in apps/web, the signed webhook at /stripe/webhook, and the stripe_event table in packages/db. Use when a feature takes money, when a Stripe event must be acted on, or when the Stripe configuration changes.
+description: Work with Stripe in web-app-scaffold — embedded Checkout Sessions from apps/graphql, the form mounted in apps/web, the signed webhook at /stripe/webhook, and the stripe_event table in packages/db. Use when a feature takes money, when a Stripe event must be acted on, or when the Stripe configuration changes.
 ---
 
 # payments — Stripe, across three layers
@@ -2265,7 +2265,7 @@ nothing to gain from a hop that can re-encode the bytes the signature covers.
 - **A public field that takes a Stripe id is an oracle.** `checkoutSessionStatus` returns a
   status and nothing else on purpose — adding the customer's email would make it worth
   attacking.
-- **Resolvers reach drizzle through `@cc4-test/db`, never `drizzle-orm` directly.** That
+- **Resolvers reach drizzle through `@web-app-scaffold/db`, never `drizzle-orm` directly.** That
   package is not a dependency of `apps/graphql` and should not become one — `packages/db`
   owns the version, and its `index.ts` re-exports the operators (`eq`, `desc`, …).
 - **Testing the return page needs no card.** A `stripe trigger checkout.session.completed`
@@ -2308,7 +2308,7 @@ is:
 
 ```diff
 --- .claude/skills/project-db/SKILL.md
- - **Never:** `apps/web` must not import `@cc4-test/db` — only the API Worker does. The
+ - **Never:** `apps/web` must not import `@web-app-scaffold/db` — only the API Worker does. The
    dependency graph is the architecture; web reaches data through the API or not at all.
 +- **`stripeEvent` is keyed on Stripe's event id**, not a serial. That is not a style
 +  choice — the conflict on re-insert is the webhook's whole idempotency mechanism. See
@@ -2332,7 +2332,7 @@ The `graphql` skill gains the third thing this Worker serves, and the var rename
 +- **It also serves Stripe's webhook**, at `STRIPE_WEBHOOK_PATH`, routed in the same place
 +  and ahead of CORS — Stripe sends no Origin. Read the `payments` skill before touching
 +  `src/stripe*.ts`.
-+- **Resolvers import drizzle operators from `@cc4-test/db`, not `drizzle-orm`.** This app has
++- **Resolvers import drizzle operators from `@web-app-scaffold/db`, not `drizzle-orm`.** This app has
 +  no drizzle dependency; `packages/db` re-exports what a resolver needs.
 @@
    enumeration oracle. The `auth` skill holds the check itself.

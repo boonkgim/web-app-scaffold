@@ -1,6 +1,6 @@
 ---
 name: graphql
-description: Change the cc4-test GraphQL API in apps/graphql — SDL schema modules, resolvers, codegen. Use when a feature needs a new field, query, or mutation, or when a resolver must change. Covers the schema module layout, the graphql-codegen server preset that scaffolds resolver files, orphan cleanup, and the Worker context.
+description: Change the web-app-scaffold GraphQL API in apps/graphql — SDL schema modules, resolvers, codegen. Use when a feature needs a new field, query, or mutation, or when a resolver must change. Covers the schema module layout, the graphql-codegen server preset that scaffolds resolver files, orphan cleanup, and the Worker context.
 ---
 
 # graphql layer — `apps/graphql`
@@ -19,7 +19,7 @@ description: Change the cc4-test GraphQL API in apps/graphql — SDL schema modu
 - **It also serves Stripe's webhook**, at `STRIPE_WEBHOOK_PATH`, routed in the same place
   and ahead of CORS — Stripe sends no Origin. Read the `payments` skill before touching
   `src/stripe*.ts`.
-- **Resolvers import drizzle operators from `@cc4-test/db`, not `drizzle-orm`.** This app has
+- **Resolvers import drizzle operators from `@web-app-scaffold/db`, not `drizzle-orm`.** This app has
   no drizzle dependency; `packages/db` re-exports what a resolver needs.
 - **Never hand-write a file under `src/schema/*/resolvers/`.** The codegen preset owns that
   tree and re-annotates every file in it via ts-morph on each run. **If the resolver file
@@ -34,7 +34,7 @@ description: Change the cc4-test GraphQL API in apps/graphql — SDL schema modu
 ```bash
 # 1. edit src/schema/<module>/schema.graphql
 # 2. then, ONCE — after ALL SDL edits are complete, not after each one:
-pnpm turbo codegen --filter @cc4-test/graphql
+pnpm turbo codegen --filter @web-app-scaffold/graphql
 # 3. implement the resolver files it scaffolded
 ```
 

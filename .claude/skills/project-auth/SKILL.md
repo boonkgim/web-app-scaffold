@@ -1,6 +1,6 @@
 ---
 name: project-auth
-description: Work with authentication in cc4-test — magic-link sign-in, sessions, the Better Auth server in apps/graphql, the same-origin proxy in apps/web, and the generated auth tables in packages/db. Use when a feature needs to know who the visitor is, when a resolver or page must be restricted, or when the auth configuration changes.
+description: Work with authentication in web-app-scaffold — magic-link sign-in, sessions, the Better Auth server in apps/graphql, the same-origin proxy in apps/web, and the generated auth tables in packages/db. Use when a feature needs to know who the visitor is, when a resolver or page must be restricted, or when the auth configuration changes.
 ---
 
 # auth — the surface that spans all three layers
@@ -31,7 +31,7 @@ Hyperdrive binding is. Its tables are generated into `packages/db/src/auth-schem
 session cookie is host-only on the web origin.
 
 Why, and do not undo it: `workers.dev` is on the Public Suffix List, so a cookie cannot span
-`cc4-test-web` and `cc4-test-graphql`. The alternative is `SameSite=None` plus credentialed
+`web-app-scaffold-web` and `web-app-scaffold-graphql`. The alternative is `SameSite=None` plus credentialed
 CORS — what `apps/graphql/src/cors.ts` exists to switch off.
 
 ## Owns / never touches
@@ -53,7 +53,7 @@ CORS — what `apps/graphql/src/cors.ts` exists to switch off.
 - **`callbackURL` is a path, never a URL from the browser.** Better Auth resolves it against
   `baseURL`. Passing an absolute one through makes the mailed link an open redirect that
   arrives carrying a fresh session.
-- The sign-in mail is `@cc4-test/email`'s `renderSignInEmail`, sent from the
+- The sign-in mail is `@web-app-scaffold/email`'s `renderSignInEmail`, sent from the
   `sendMagicLink` callback `createAuth` passes into `authOptions`. Template and copy belong
   to the `email` skill.
 
@@ -81,10 +81,10 @@ may not see this".
 there can move the tables. Two commands, and they are **not** automatic:
 
 ```bash
-pnpm --filter @cc4-test/graphql auth:generate   # rewrites packages/db/src/auth-schema.ts
-pnpm --filter @cc4-test/db generate             # drizzle-kit diffs it into a migration
+pnpm --filter @web-app-scaffold/graphql auth:generate   # rewrites packages/db/src/auth-schema.ts
+pnpm --filter @web-app-scaffold/db generate             # drizzle-kit diffs it into a migration
 #   ↳ READ THE GENERATED SQL
-pnpm --filter @cc4-test/db migrate
+pnpm --filter @web-app-scaffold/db migrate
 ```
 
 `auth:generate` is not part of `turbo codegen`: it runs in `apps/graphql` and writes into

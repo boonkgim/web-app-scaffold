@@ -4,7 +4,7 @@
   // rather than renaming the old one, so a rename is really deploy the new name, repoint
   // apps/web's `API` binding, deploy web, then delete the old Worker. The public URL
   // moves with the name. `/setup` sets this from your project name.
-  "name": "cc4-test-graphql",
+  "name": "web-app-scaffold-graphql",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-03",
   "compatibility_flags": ["nodejs_compat"],
@@ -23,7 +23,7 @@
     // Plain config, split the same way: a deployed default here, a local override
     // below. What it proves is below, once the client half exists to read it back.
     "APP_ENV": "production",
-    "MAIL_FROM": "cc4-test <onboarding@resend.dev>",
+    "MAIL_FROM": "web-app-scaffold <onboarding@resend.dev>",
     "MAIL_TRANSPORT": "resend",
     // Who sendTestEmail may write to. Fail-closed, like CORS_ORIGINS: an empty list
     // refuses everything, so a public mutation cannot become an open relay.
@@ -57,7 +57,7 @@
       // local stack runs before you have a Cloudflare account at all; only a real deploy
       // needs it.
       "id": "",
-      "localConnectionString": "postgres://postgres:postgres@localhost:5434/cc4-test",
+      "localConnectionString": "postgres://postgres:postgres@localhost:5434/web-app-scaffold",
     },
   ],
 }

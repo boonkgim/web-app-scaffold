@@ -1,6 +1,6 @@
 ---
 name: project-web
-description: Change the cc4-test Next.js app in apps/web — pages, components, typed GraphQL operations, and theming. Use when a feature needs UI, a new query from the web side, or a re-theme. Covers typed documents from codegen, the graphqlFetch boundary, the theme token contract, and the vendored shadcn checkout.
+description: Change the web-app-scaffold Next.js app in apps/web — pages, components, typed GraphQL operations, and theming. Use when a feature needs UI, a new query from the web side, or a re-theme. Covers typed documents from codegen, the graphqlFetch boundary, the theme token contract, and the vendored shadcn checkout.
 ---
 
 # web layer — `apps/web`
@@ -8,7 +8,7 @@ description: Change the cc4-test Next.js app in apps/web — pages, components, 
 ## Owns / never touches
 
 - **Owns:** `src/app/**` (routes), `src/components/**`, `src/lib/**`, `src/styles/theme.css`.
-- **Never imports `@cc4-test/db`.** Web reaches data only through the GraphQL API. The
+- **Never imports `@web-app-scaffold/db`.** Web reaches data only through the GraphQL API. The
   dependency graph is what enforces the architecture.
 - **Never edits `src/generated/**`** — regenerated from the API's merged SDL.
 - **`src/app/api/auth/[...all]/route.ts` is a transparent proxy to the API Worker**, and the
@@ -26,7 +26,7 @@ description: Change the cc4-test Next.js app in apps/web — pages, components, 
 
 ```bash
 # 1. write the operation inside graphql`...` from @/generated
-# 2. pnpm turbo codegen --filter @cc4-test/web    # types it off apps/graphql's merged SDL
+# 2. pnpm turbo codegen --filter @web-app-scaffold/web    # types it off apps/graphql's merged SDL
 # 3. call it with graphqlFetch from @/lib/api
 ```
 

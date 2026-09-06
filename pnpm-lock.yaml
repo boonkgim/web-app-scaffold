@@ -47,10 +47,10 @@ importers:
 
   apps/graphql:
     dependencies:
-      '@cc4-test/db':
+      '@web-app-scaffold/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@cc4-test/email':
+      '@web-app-scaffold/email':
         specifier: workspace:*
         version: link:../../packages/email
       better-auth:

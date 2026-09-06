@@ -1,4 +1,4 @@
-import { createMailer, renderSignInEmail } from "@cc4-test/email";
+import { createMailer, renderSignInEmail } from "@web-app-scaffold/email";
 import { GraphQLError } from "graphql";
 import { isAllowedRecipient } from "./../../../../mail";
 import type { MutationResolvers } from "./../../../types.generated";
@@ -15,7 +15,7 @@ export const sendTestEmail: NonNullable<
   // into an endpoint that mails working credentials for any address in
   // MAIL_TEST_RECIPIENTS. The allowlist is the only thing in front of it.
   const message = await renderSignInEmail(
-    "https://cc4-test.example/api/auth/magic-link/verify?token=placeholder",
+    "https://web-app-scaffold.example/api/auth/magic-link/verify?token=placeholder",
   );
   await createMailer(ctx).send({ to, ...message });
 

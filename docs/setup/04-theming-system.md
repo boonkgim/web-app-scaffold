@@ -671,7 +671,7 @@ const mono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "cc4-test",
+  title: "web-app-scaffold",
   description: "A small store, built in thin slices.",
 };
 
@@ -750,7 +750,7 @@ export default async function Home() {
             slot a header-level control belongs in. Laying the toggle out with
             flex utilities here would be fighting the component. */}
         <CardHeader>
-          <CardTitle>cc4-test</CardTitle>
+          <CardTitle>web-app-scaffold</CardTitle>
           <CardAction>
             <ModeToggle />
           </CardAction>
@@ -818,7 +818,7 @@ CLI writes, not from a step that broke.
 **Production gate** — nothing here touches the API, so web alone, from root:
 
 ```bash
-pnpm --filter @cc4-test/web deploy:production
+pnpm --filter @web-app-scaffold/web deploy:production
 ```
 
 Then, on the deployed URL, four things `next dev` could not have told you:
@@ -837,7 +837,7 @@ Then, on the deployed URL, four things `next dev` could not have told you:
   browser cache from the `pnpm preview` run.
 
 **What Round 2 found on this run.** All five checks green on
-`https://cc4-test-web.yoursubdomain.workers.dev`, first try. The evidence, rather than the
+`https://web-app-scaffold-web.yoursubdomain.workers.dev`, first try. The evidence, rather than the
 impression:
 
 - Styled: one stylesheet, 91 rules, and the `.css` re-fetched with `cache: "no-store"` returned
@@ -870,7 +870,7 @@ cd ../..   # to the repo root
 cat > .claude/skills/project-web/SKILL.md <<'EOF'
 ---
 name: project-web
-description: Change the cc4-test Next.js app in apps/web — pages, components, typed GraphQL operations, and theming. Use when a feature needs UI, a new query from the web side, or a re-theme. Covers typed documents from codegen, the graphqlFetch boundary, the theme token contract, and the vendored shadcn checkout.
+description: Change the web-app-scaffold Next.js app in apps/web — pages, components, typed GraphQL operations, and theming. Use when a feature needs UI, a new query from the web side, or a re-theme. Covers typed documents from codegen, the graphqlFetch boundary, the theme token contract, and the vendored shadcn checkout.
 ---
 
 # web layer — `apps/web`
@@ -878,7 +878,7 @@ description: Change the cc4-test Next.js app in apps/web — pages, components, 
 ## Owns / never touches
 
 - **Owns:** `src/app/**` (routes), `src/components/**`, `src/lib/**`, `src/styles/theme.css`.
-- **Never imports `@cc4-test/db`.** Web reaches data only through the GraphQL API. The
+- **Never imports `@web-app-scaffold/db`.** Web reaches data only through the GraphQL API. The
   dependency graph is what enforces the architecture.
 - **Never edits `src/generated/**`** — regenerated from the API's merged SDL.
 - **This is not the Next.js you know.** Next 16 has breaking changes against training data:
@@ -889,7 +889,7 @@ description: Change the cc4-test Next.js app in apps/web — pages, components, 
 
 ```bash
 # 1. write the operation inside graphql`...` from @/generated
-# 2. pnpm turbo codegen --filter @cc4-test/web    # types it off apps/graphql's merged SDL
+# 2. pnpm turbo codegen --filter @web-app-scaffold/web    # types it off apps/graphql's merged SDL
 # 3. call it with graphqlFetch from @/lib/api
 ```
 

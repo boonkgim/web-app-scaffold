@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { createDb, stripeEvent } from "@cc4-test/db";
+import { createDb, stripeEvent } from "@web-app-scaffold/db";
 import { createStripe, STRIPE_WEBHOOK_PATH } from "./stripe";
 import { requireEnv } from "./env";
 import type { Env } from "./context";

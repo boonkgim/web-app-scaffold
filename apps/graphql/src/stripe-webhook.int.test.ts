@@ -1,9 +1,9 @@
 import Stripe from "stripe";
 import { expect, test } from "vitest";
-import { createDb, eq, stripeEvent } from "@cc4-test/db";
+import { createDb, eq, stripeEvent } from "@web-app-scaffold/db";
 import worker, { type Env } from "./index";
 
-const DOCKER_URL = "postgres://postgres:postgres@localhost:5434/cc4-test";
+const DOCKER_URL = "postgres://postgres:postgres@localhost:5434/web-app-scaffold";
 const CONNECTION = process.env.DATABASE_URL ?? DOCKER_URL;
 const SECRET = "whsec_integration_test_secret_not_used_anywhere_else";
 

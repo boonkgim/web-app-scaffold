@@ -1,6 +1,6 @@
 ---
 name: project-payments
-description: Work with Stripe in cc4-test — embedded Checkout Sessions from apps/graphql, the form mounted in apps/web, the signed webhook at /stripe/webhook, and the stripe_event table in packages/db. Use when a feature takes money, when a Stripe event must be acted on, or when the Stripe configuration changes.
+description: Work with Stripe in web-app-scaffold — embedded Checkout Sessions from apps/graphql, the form mounted in apps/web, the signed webhook at /stripe/webhook, and the stripe_event table in packages/db. Use when a feature takes money, when a Stripe event must be acted on, or when the Stripe configuration changes.
 ---
 
 # payments — Stripe, across three layers
@@ -129,7 +129,7 @@ nothing to gain from a hop that can re-encode the bytes the signature covers.
 - **A public field that takes a Stripe id is an oracle.** `checkoutSessionStatus` returns a
   status and nothing else on purpose — adding the customer's email would make it worth
   attacking.
-- **Resolvers reach drizzle through `@cc4-test/db`, never `drizzle-orm` directly.** That
+- **Resolvers reach drizzle through `@web-app-scaffold/db`, never `drizzle-orm` directly.** That
   package is not a dependency of `apps/graphql` and should not become one — `packages/db`
   owns the version, and its `index.ts` re-exports the operators (`eq`, `desc`, …).
 - **Testing the return page needs no card.** A `stripe trigger checkout.session.completed`

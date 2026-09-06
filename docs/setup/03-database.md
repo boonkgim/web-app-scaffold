@@ -43,7 +43,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: cc4-test
+      POSTGRES_DB: web-app-scaffold
     # /var/lib/postgresql, NOT /var/lib/postgresql/data. Postgres 18 changed where the
     # image puts its data: PGDATA moved to a major-versioned subdirectory
     # (/var/lib/postgresql/18/docker) so `pg_upgrade --link` can work across majors
@@ -71,14 +71,14 @@ docker compose up -d --wait
 `apps/web` and, later, the API Worker. Small commits at every green gate keep fast iteration
 reversible.
 
-`packages/db` (`@cc4-test/db`):
+`packages/db` (`@web-app-scaffold/db`):
 
 Unlike the root `pnpm init` in slice 0, this one wrote **no `devEngines` block** — that trap is
 a root-init behaviour, so there is nothing to delete here. Verified on the run that built this.
 
 ```bash
 mkdir -p packages/db && cd packages/db && pnpm init
-pnpm pkg set name="@cc4-test/db"
+pnpm pkg set name="@web-app-scaffold/db"
 pnpm pkg set exports="./src/index.ts"
 pnpm pkg delete main
 pnpm add drizzle-orm pg
@@ -86,7 +86,7 @@ pnpm add -D drizzle-kit @types/pg
 ```
 
 The `exports` line is load-bearing and easy to skip: `pnpm init` writes `"main": "index.js"`
-pointing at a file this package never creates, so `import ... from "@cc4-test/db"` fails to
+pointing at a file this package never creates, so `import ... from "@web-app-scaffold/db"` fails to
 resolve in every consumer — wrangler's build error even suggests adding an `alias`, which
 treats the symptom. Because the base tsconfig sets `moduleResolution: "Bundler"`, `exports`
 can name the TypeScript source directly and no build step is needed; wrangler, vitest, and
@@ -227,7 +227,7 @@ same as every other package's. `.env.production` is created later, at this slice
 gate, once the Neon project exists:
 
 ```bash
-echo "DATABASE_URL=postgres://postgres:postgres@localhost:5434/cc4-test" > .env.development
+echo "DATABASE_URL=postgres://postgres:postgres@localhost:5434/web-app-scaffold" > .env.development
 ```
 
 Add the checklist file too — the only committed env file in the package, holding a dummy
@@ -328,7 +328,7 @@ import { createDb } from "./client";
 import { items } from "./schema";
 
 // Docker Compose defaults, identical for everyone — the override is for a nonstandard port.
-const DOCKER_URL = "postgres://postgres:postgres@localhost:5434/cc4-test";
+const DOCKER_URL = "postgres://postgres:postgres@localhost:5434/web-app-scaffold";
 const url = process.env.DATABASE_URL ?? DOCKER_URL;
 
 test("round-trips a row through local Postgres", async () => {
@@ -382,7 +382,7 @@ of Postgres, and that rewrite is the whole proof.
 
 ```bash
 cd ../../apps/graphql   # from packages/db
-pnpm add @cc4-test/db@workspace:*
+pnpm add @web-app-scaffold/db@workspace:*
 ```
 
 Add the Hyperdrive binding by rewriting `apps/graphql/wrangler.jsonc`'s binding block by hand
@@ -396,7 +396,7 @@ which is why a placeholder goes in now rather than the key being left out until 
     {
       "binding": "HYPERDRIVE",
       "id": "placeholder-until-production-half",
-      "localConnectionString": "postgres://postgres:postgres@localhost:5434/cc4-test",
+      "localConnectionString": "postgres://postgres:postgres@localhost:5434/web-app-scaffold",
     },
   ],
 ```
@@ -442,7 +442,7 @@ Now the rewrite that is the point of this slice. `health` stops answering for it
 
 ```bash
 cat > src/schema/system/resolvers/Query/health.ts <<'EOF'
-import { createDb, items } from "@cc4-test/db";
+import { createDb, items } from "@web-app-scaffold/db";
 import type { QueryResolvers } from "./../../../types.generated";
 
 // Reads the migrated table rather than just constructing a client. Building a Pool
@@ -471,7 +471,7 @@ cat > src/index.int.test.ts <<'EOF'
 import { expect, test } from "vitest";
 import worker, { type Env } from "./index";
 
-const DOCKER_URL = "postgres://postgres:postgres@localhost:5434/cc4-test";
+const DOCKER_URL = "postgres://postgres:postgres@localhost:5434/web-app-scaffold";
 const env = {
   HYPERDRIVE: { connectionString: process.env.DATABASE_URL ?? DOCKER_URL },
 } as unknown as Env;
@@ -577,7 +577,7 @@ wrangler is installed (`pnpm wrangler` cannot resolve it from `packages/db`), th
 
 ```bash
 cd ../../apps/graphql   # from packages/db
-pnpm wrangler hyperdrive create cc4-test-hyperdrive --env-file .env.production --connection-string="postgres://...neon direct url..."
+pnpm wrangler hyperdrive create web-app-scaffold-hyperdrive --env-file .env.production --connection-string="postgres://...neon direct url..."
 pnpm cf-typegen
 ```
 
@@ -621,12 +621,12 @@ pnpm deploy:production
 to a version of it, so the deployed page serves the new value on its next request. Verify that
 rather than redeploying web out of caution.
 
-**Round 2 result, 2026-09-06: green.** The Neon project is `cc4-test` (`<your-neon-project-id>`),
+**Round 2 result, 2026-09-06: green.** The Neon project is `web-app-scaffold` (`<your-neon-project-id>`),
 Postgres 18, AWS US East 2 (Ohio), Free tier, branch `production`, created with **Enable Neon
-Auth off**. The Hyperdrive config is `cc4-test-hyperdrive`, id
+Auth off**. The Hyperdrive config is `web-app-scaffold-hyperdrive`, id
 `<your-hyperdrive-id>`, now in `wrangler.jsonc` in place of the placeholder. The API
 deployed as version `f41c627d-8a8e-4aff-911d-a39a33472944`, and
-`https://cc4-test-graphql.yoursubdomain.workers.dev/graphql` answers
+`https://web-app-scaffold-graphql.yoursubdomain.workers.dev/graphql` answers
 `{"health":"ok:db","appEnv":"production"}`.
 
 `apps/web` was **not** redeployed, and the deployed page still picked up the new value on its
@@ -669,7 +669,7 @@ cd ../..   # to the repo root
 cat > .claude/skills/project-db/SKILL.md <<'EOF'
 ---
 name: project-db
-description: Change the cc4-test database schema in packages/db — tables, columns, indexes, migrations. Use when a feature needs new or changed data. Covers Drizzle schema edits, drizzle-kit generate/migrate, reviewing generated SQL before applying it, and the local Docker Postgres.
+description: Change the web-app-scaffold database schema in packages/db — tables, columns, indexes, migrations. Use when a feature needs new or changed data. Covers Drizzle schema edits, drizzle-kit generate/migrate, reviewing generated SQL before applying it, and the local Docker Postgres.
 ---
 
 # db layer — `packages/db`
@@ -678,7 +678,7 @@ description: Change the cc4-test database schema in packages/db — tables, colu
 
 - **Owns:** `src/schema.ts` is the source of truth for every table. Nothing else defines
   one. Also owns `migrations/` and the client factory in `src/client.ts`.
-- **Never:** `apps/web` must not import `@cc4-test/db` — only the API Worker does. The
+- **Never:** `apps/web` must not import `@web-app-scaffold/db` — only the API Worker does. The
   dependency graph is the architecture; web reaches data through the API or not at all.
 - **Never:** migrations do not run from a Worker. They run from your machine via
   drizzle-kit, against a direct connection — never through Hyperdrive.
@@ -687,9 +687,9 @@ description: Change the cc4-test database schema in packages/db — tables, colu
 
 ```bash
 docker compose up -d                        # local Postgres — port 5434, not 5432
-pnpm --filter @cc4-test/db generate        # writes migrations/NNNN_name.sql + snapshot
+pnpm --filter @web-app-scaffold/db generate        # writes migrations/NNNN_name.sql + snapshot
 #   ↳ READ THE GENERATED SQL NOW
-pnpm --filter @cc4-test/db migrate         # applies to local Docker via .env.development
+pnpm --filter @web-app-scaffold/db migrate         # applies to local Docker via .env.development
 ```
 
 `migrate:production` is a separate deliberate command run at deploy time, not here — the

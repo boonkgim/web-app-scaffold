@@ -9,7 +9,7 @@ export default function CheckoutPage() {
     <main className="flex flex-1 items-center justify-center p-6">
       <Card className="w-full max-w-xl">
         <CardHeader>
-          <CardTitle>cc4-test test item</CardTitle>
+          <CardTitle>web-app-scaffold test item</CardTitle>
         </CardHeader>
         <CardContent>
           <CheckoutForm />

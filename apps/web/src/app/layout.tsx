@@ -18,7 +18,7 @@ const mono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "cc4-test",
+  title: "web-app-scaffold",
   description: "A small store, built in thin slices.",
 };
 

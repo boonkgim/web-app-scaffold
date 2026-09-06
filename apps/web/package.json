@@ -1,5 +1,5 @@
 {
-  "name": "@cc4-test/web",
+  "name": "@web-app-scaffold/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {

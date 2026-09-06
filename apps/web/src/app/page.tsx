@@ -49,7 +49,7 @@ export default async function Home() {
             slot a header-level control belongs in. Laying the toggle out with
             flex utilities here would be fighting the component. */}
         <CardHeader>
-          <CardTitle>cc4-test</CardTitle>
+          <CardTitle>web-app-scaffold</CardTitle>
           <CardAction>
             <ModeToggle />
           </CardAction>

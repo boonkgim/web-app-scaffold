@@ -24,7 +24,7 @@ const message = {
   text: "h",
 };
 const env = (over: Partial<MailEnv>): MailEnv =>
-  ({ MAIL_FROM: "cc4-test <no-reply@example.test>", ...over }) as MailEnv;
+  ({ MAIL_FROM: "web-app-scaffold <no-reply@example.test>", ...over }) as MailEnv;
 
 test("the resend transport posts the rendered message and the configured from", async () => {
   await createMailer(
@@ -33,7 +33,7 @@ test("the resend transport posts the rendered message and the configured from", 
 
   expect(mocks.keys).toContain("re_test");
   expect(mocks.send).toHaveBeenCalledWith({
-    from: "cc4-test <no-reply@example.test>",
+    from: "web-app-scaffold <no-reply@example.test>",
     to: ["someone@example.test"],
     subject: "s",
     html: "<p>h</p>",

@@ -19,7 +19,7 @@ export async function renderSignInEmail(url: string): Promise<RenderedEmail> {
     // The subject lives here rather than in the template: a React component renders a
     // body, and a subject is a header. Keeping them in one function is what stops a
     // template being sent with someone else's subject.
-    subject: "Your cc4-test sign-in link",
+    subject: "Your web-app-scaffold sign-in link",
     html: await render(element),
     text: await render(element, { plainText: true }),
   };

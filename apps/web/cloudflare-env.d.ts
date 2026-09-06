@@ -5,7 +5,7 @@ interface __BaseEnv_CloudflareEnv {
 	IMAGES: ImagesBinding;
 	ASSETS: Fetcher;
 	WORKER_SELF_REFERENCE: Service<typeof import("./.open-next/worker").default>;
-	API: Fetcher /* cc4-test-graphql */;
+	API: Fetcher /* web-app-scaffold-graphql */;
 }
 declare namespace Cloudflare {
 	interface GlobalProps {

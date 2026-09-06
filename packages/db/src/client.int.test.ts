@@ -4,7 +4,7 @@ import { createDb } from "./client";
 import { items } from "./schema";
 
 // Docker Compose defaults, identical for everyone — the override is for a nonstandard port.
-const DOCKER_URL = "postgres://postgres:postgres@localhost:5434/cc4-test";
+const DOCKER_URL = "postgres://postgres:postgres@localhost:5434/web-app-scaffold";
 const url = process.env.DATABASE_URL ?? DOCKER_URL;
 
 test("round-trips a row through local Postgres", async () => {

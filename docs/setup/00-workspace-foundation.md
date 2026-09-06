@@ -271,11 +271,11 @@ Where a value actually lives follows the same rule, split by kind:
 `.env.example` re-admitted. Everything past that is a naming and placement discipline, not a
 tool, and it costs nothing to settle now.
 
-`packages/config` (`@cc4-test/config`) — the shared tsconfig every package extends:
+`packages/config` (`@web-app-scaffold/config`) — the shared tsconfig every package extends:
 
 ```bash
 mkdir -p packages/config && cd packages/config && pnpm init
-pnpm pkg set name="@cc4-test/config"
+pnpm pkg set name="@web-app-scaffold/config"
 pnpm pkg delete scripts.test   # init's failing placeholder would break root `pnpm test` via turbo
 ```
 
@@ -443,7 +443,7 @@ it. It follows the same six-piece contract every later package does (`reference/
 
 ```bash
 mkdir -p packages/mock/src && cd packages/mock && pnpm init
-pnpm pkg set name="@cc4-test/mock"
+pnpm pkg set name="@web-app-scaffold/mock"
 pnpm pkg set devDependencies.typescript="catalog:"
 pnpm add -D vitest
 pnpm pkg set \
@@ -1026,7 +1026,7 @@ skill yet to point to, so it starts as just the package map:
 
 ```bash
 cat > CLAUDE.md <<'EOF'
-# cc4-test
+# web-app-scaffold
 
 pnpm workspace. What is in it:
 
@@ -1131,7 +1131,7 @@ Behaviour, reproduced rather than assumed:
   `eslint-config-next` against eslint 10 is **not yet verified** — Slice 1's lint gate is
   the first thing that will exercise it.
 
-### 2026-09-06 — Slice 0, cc4-test
+### 2026-09-06 — Slice 0, web-app-scaffold
 
 Environment: Node **24.18.0**, pnpm **11.15.1**, corepack 0.35.0. No `nvm`, `fnm` or `mise` on
 `PATH` — the reason the Node step above drops `nvm use` and only asserts the version.

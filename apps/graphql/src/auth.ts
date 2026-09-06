@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { createDb } from "@cc4-test/db";
-import { createMailer, renderSignInEmail } from "@cc4-test/email";
+import { createDb } from "@web-app-scaffold/db";
+import { createMailer, renderSignInEmail } from "@web-app-scaffold/email";
 import { AUTH_BASE_PATH, authOptions } from "./auth-options";
 import { requireEnv } from "./env";
 import type { Env } from "./context";

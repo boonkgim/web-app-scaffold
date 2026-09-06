@@ -19,9 +19,13 @@ import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // The literal token this scaffold ships under. It is also the npm scope
-// (@cc4-test/db), the Worker name prefix (cc4-test-web) and the Postgres database name,
-// which is exactly why one substring replace covers all of them.
-const TEMPLATE = "cc4-test";
+// (@web-app-scaffold/db), the Worker name prefix (web-app-scaffold-web) and the Postgres
+// database name, which is exactly why one substring replace covers all of them.
+//
+// This file is excluded from its own rewrite, so renaming the scaffold itself does not
+// update this line — change it by hand, or the next clone renames from a token that is
+// no longer in the tree and the script correctly refuses as "already renamed".
+const TEMPLATE = "web-app-scaffold";
 
 // Never rewritten by sed-style replacement: the lockfile encodes integrity hashes and
 // resolved workspace paths together, and a text edit produces a file that installs but

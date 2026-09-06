@@ -35,10 +35,10 @@ export function SignInEmail({ url }: SignInEmailProps) {
       <Head />
       {/* The inbox line under the subject. Without it clients scrape the first text
           they find, which is usually the heading repeated. */}
-      <Preview>Your cc4-test sign-in link</Preview>
+      <Preview>Your web-app-scaffold sign-in link</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading>Sign in to cc4-test</Heading>
+          <Heading>Sign in to web-app-scaffold</Heading>
           {/* No expiry in minutes and no "single use" promise with a number attached:
               both live in the magicLink plugin's options, and a second copy here goes
               stale the moment someone tunes them. */}
@@ -64,7 +64,7 @@ export function SignInEmail({ url }: SignInEmailProps) {
 
 // `email dev` renders the default export, with PreviewProps as its sample data.
 SignInEmail.PreviewProps = {
-  url: "https://cc4-test.example/api/auth/magic-link/verify?token=preview",
+  url: "https://web-app-scaffold.example/api/auth/magic-link/verify?token=preview",
 } satisfies SignInEmailProps;
 
 export default SignInEmail;

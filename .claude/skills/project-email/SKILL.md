@@ -1,6 +1,6 @@
 ---
 name: project-email
-description: Write or change transactional email in cc4-test — React Email templates in packages/email, the render helpers, and the Resend transport. Use when a feature sends mail, when a template's copy or markup changes, or when the mail transport or sender address changes.
+description: Write or change transactional email in web-app-scaffold — React Email templates in packages/email, the render helpers, and the Resend transport. Use when a feature sends mail, when a template's copy or markup changes, or when the mail transport or sender address changes.
 ---
 
 # email — `packages/email`
@@ -29,7 +29,7 @@ description: Write or change transactional email in cc4-test — React Email tem
 # 1. emails/<name>.tsx — a component, plus a default export and PreviewProps
 # 2. src/render.tsx — a render<Name>Email() returning { subject, html, text }
 # 3. export it from src/index.ts
-pnpm --filter @cc4-test/email email:dev      # preview on :3001, not :3000
+pnpm --filter @web-app-scaffold/email email:dev      # preview on :3001, not :3000
 ```
 
 - **Inline styles only.** Email clients strip or ignore `<style>` and there is no cascade.

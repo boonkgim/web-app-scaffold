@@ -30,7 +30,7 @@ belongs to.
 ```bash
 cd ../..   # from wherever the previous slice ended
 mkdir -p apps/graphql && cd apps/graphql && pnpm init
-pnpm pkg set name="@cc4-test/graphql"
+pnpm pkg set name="@web-app-scaffold/graphql"
 pnpm pkg delete main   # `pnpm init` points it at an index.js that never exists
 pnpm add graphql-yoga graphql@^17   # pin the major deliberately — see below
 pnpm add -D wrangler
@@ -100,11 +100,11 @@ own code is checked.
 cat > wrangler.jsonc <<'EOF'
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  // Renamed from "cc4-test-api". A Worker's name is its identity, not a label: this
+  // Renamed from "web-app-scaffold-api". A Worker's name is its identity, not a label: this
   // deploy created a new Worker rather than renaming the old one, so the migration was
   // deploy this, repoint apps/web's `API` binding, deploy web, then delete the old
-  // Worker. The public URL moved to cc4-test-graphql.yoursubdomain.workers.dev with it.
-  "name": "cc4-test-graphql",
+  // Worker. The public URL moved to web-app-scaffold-graphql.yoursubdomain.workers.dev with it.
+  "name": "web-app-scaffold-graphql",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-03",
   "compatibility_flags": ["nodejs_compat"],
@@ -117,7 +117,7 @@ Cloudflare, so `name` is not a label you get to keep in sync with the directory 
 `apps/web`'s service binding, added later in this slice, names this Worker, the workers.dev URL is derived from
 it, and there is no rename operation — only "deploy the new one, repoint what binds to it,
 deploy that, delete the old one". This repo has already paid that cost once: the Worker was
-`cc4-test-api` until the directory became `apps/graphql` and the two names were made to agree,
+`web-app-scaffold-api` until the directory became `apps/graphql` and the two names were made to agree,
 which is why the comment reads like history. Directory names are free to change; this one costs
 a deploy sequence.
 
@@ -575,7 +575,7 @@ cd ../web   # from apps/graphql
 cat > wrangler.jsonc <<'EOF'
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "cc4-test-web",
+  "name": "web-app-scaffold-web",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-09-03",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -585,8 +585,8 @@ cat > wrangler.jsonc <<'EOF'
   // the reference alone would have silently deleted it. Read before overwriting — done.
   "images": { "binding": "IMAGES" },
   "services": [
-    { "binding": "WORKER_SELF_REFERENCE", "service": "cc4-test-web" },
-    { "binding": "API", "service": "cc4-test-graphql" },
+    { "binding": "WORKER_SELF_REFERENCE", "service": "web-app-scaffold-web" },
+    { "binding": "API", "service": "web-app-scaffold-graphql" },
   ],
 }
 EOF
@@ -744,7 +744,7 @@ export default async function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-zinc-50 font-sans dark:bg-black">
       <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-        cc4-test
+        web-app-scaffold
       </h1>
       {res.errors ? (
         <p className="font-mono text-sm text-red-600">
@@ -1103,7 +1103,7 @@ non-secret config value, not just an allowlist:
     // A var and not a hardcoded constant because this is the one piece of the Worker
     // that names something outside it. When apps/web moves to a custom domain, its
     // origin changes and this Worker's code does not.
-    "CORS_ORIGINS": "https://cc4-test-web.yoursubdomain.workers.dev",
+    "CORS_ORIGINS": "https://web-app-scaffold-web.yoursubdomain.workers.dev",
     // Plain config, split the same way: a deployed default here, a local override
     // below. What it proves is below, once the client half exists to read it back.
     "APP_ENV": "production"
@@ -1204,7 +1204,7 @@ is the real defect it was papering over. `wrangler types` defaults to `--strict-
 which emits each var as a **literal type** read off `wrangler.jsonc`:
 
 ```ts
-CORS_ORIGINS: "https://cc4-test-web.yoursubdomain.workers.dev";
+CORS_ORIGINS: "https://web-app-scaffold-web.yoursubdomain.workers.dev";
 APP_ENV: "production";
 ```
 
@@ -1244,7 +1244,7 @@ import worker, { type Env } from "./index";
 // Any absolute origin does: every case below feeds this same string in as the allowlist
 // and asserts against it, so the test pins the *shape* of the answer and never the
 // deployment. Deliberately not the real origin — that lives in wrangler.jsonc alone.
-const WEB = "https://cc4-test-web.example.workers.dev";
+const WEB = "https://web-app-scaffold-web.example.workers.dev";
 const EVIL = "https://evil.example";
 
 const envWith = (origins?: string) =>
@@ -1537,7 +1537,7 @@ export default async function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-zinc-50 font-sans dark:bg-black">
       <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-        cc4-test
+        web-app-scaffold
       </h1>
       {res.errors ? (
         <p className="font-mono text-sm text-red-600">
@@ -1597,7 +1597,7 @@ stopped being collected look exactly like one that passed.
 **The preview row asserts different values from the browser row, and that is the row doing its
 job.** `wrangler dev` must be running in `apps/graphql` for it: wrangler resolves a local
 service binding through its dev registry, and the preview output says which way it went —
-`env.API (cc4-test-graphql) Worker local [connected]`. A `[not connected]` there is the row
+`env.API (web-app-scaffold-graphql) Worker local [connected]`. A `[not connected]` there is the row
 failing, and it fails as a GraphQL error on the page rather than as a crash.
 
 **`health` returning `"ok"` from the Worker is not a weaker gate than `"ok:db"` would be.**
@@ -1632,15 +1632,15 @@ and lists `.next/types/**` among its outputs (Slice 0), so a turbo cache hit res
 types rather than requiring a full build.
 
 Deploy — from root, api first, then web. **The order is not a preference.** `apps/web`'s
-`wrangler.jsonc` declares a service binding to `cc4-test-graphql`, and wrangler resolves that
+`wrangler.jsonc` declares a service binding to `web-app-scaffold-graphql`, and wrangler resolves that
 binding when it uploads the Worker, not when a request arrives — so deploying web against a
 Worker that does not exist yet fails the deploy outright rather than degrading at runtime.
 
 Deploy, API first:
 
 ```bash
-pnpm --filter @cc4-test/graphql deploy:production
-pnpm --filter @cc4-test/web deploy:production
+pnpm --filter @web-app-scaffold/graphql deploy:production
+pnpm --filter @web-app-scaffold/web deploy:production
 ```
 
 **Production gate:** the production page renders `version` and `health` from the deployed
@@ -1652,10 +1652,10 @@ above:
 
 | Worker             | URL                                             |
 | ------------------ | ----------------------------------------------- |
-| `cc4-test-graphql` | `https://cc4-test-graphql.yoursubdomain.workers.dev` |
-| `cc4-test-web`     | `https://cc4-test-web.yoursubdomain.workers.dev`     |
+| `web-app-scaffold-graphql` | `https://web-app-scaffold-graphql.yoursubdomain.workers.dev` |
+| `web-app-scaffold-web`     | `https://web-app-scaffold-web.yoursubdomain.workers.dev`     |
 
-The web deploy's binding table listed `env.API (cc4-test-graphql)` alongside `env.IMAGES`,
+The web deploy's binding table listed `env.API (web-app-scaffold-graphql)` alongside `env.IMAGES`,
 `env.ASSETS` and `env.WORKER_SELF_REFERENCE` — which is the check that the `images` binding
 Slice 1 wrote survived this slice's rewrite of `wrangler.jsonc`, and that the service binding
 resolved at upload time. The page renders `1` / `ok` / `production` / `production`.
@@ -1695,7 +1695,7 @@ cd ../..   # to the repo root
 cat > .claude/skills/project-graphql/SKILL.md <<'EOF'
 ---
 name: graphql
-description: Change the cc4-test GraphQL API in apps/graphql — SDL schema modules, resolvers, codegen. Use when a feature needs a new field, query, or mutation, or when a resolver must change. Covers the schema module layout, the graphql-codegen server preset that scaffolds resolver files, orphan cleanup, and the Worker context.
+description: Change the web-app-scaffold GraphQL API in apps/graphql — SDL schema modules, resolvers, codegen. Use when a feature needs a new field, query, or mutation, or when a resolver must change. Covers the schema module layout, the graphql-codegen server preset that scaffolds resolver files, orphan cleanup, and the Worker context.
 ---
 
 # graphql layer — `apps/graphql`
@@ -1721,7 +1721,7 @@ description: Change the cc4-test GraphQL API in apps/graphql — SDL schema modu
 ```bash
 # 1. edit src/schema/<module>/schema.graphql
 # 2. then, ONCE — after ALL SDL edits are complete, not after each one:
-pnpm turbo codegen --filter @cc4-test/graphql
+pnpm turbo codegen --filter @web-app-scaffold/graphql
 # 3. implement the resolver files it scaffolded
 ```
 

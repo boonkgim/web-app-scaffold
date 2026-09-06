@@ -1,4 +1,4 @@
-# cc4-test
+# web-app-scaffold
 
 pnpm workspace. What is in it:
 

@@ -54,7 +54,7 @@ It writes its own `pnpm-workspace.yaml`, `pnpm-lock.yaml`, and `packageManager` 
 `apps/web`, which makes `apps/web` the **root of its own pnpm workspace**: `pnpm` resolves the
 workspace root by walking _up_ to the nearest `pnpm-workspace.yaml`, so it stops at `apps/web`
 and never sees yours. Every install run from that directory then builds a second, parallel
-dependency tree in `apps/web/node_modules` against a second lockfile — `@cc4-test/*`
+dependency tree in `apps/web/node_modules` against a second lockfile — `@web-app-scaffold/*`
 workspace links silently fail to resolve, and the root `pnpm install` manages none of it.
 Delete all three before installing anything:
 
@@ -74,7 +74,7 @@ already pins the exact pnpm version.)
 Then the package name, the Cloudflare adapter, and the shared TypeScript:
 
 ```bash
-pnpm pkg set name="@cc4-test/web"   # create-next-app names it "web"; --filter deploys in Slice 2 need the scoped name
+pnpm pkg set name="@web-app-scaffold/web"   # create-next-app names it "web"; --filter deploys in Slice 2 need the scoped name
 pnpm add @opennextjs/cloudflare@latest
 pnpm add -D wrangler@latest
 pnpm add -D typescript@catalog:      # create-next-app pins ^5; the catalog is the workspace's single answer
@@ -163,14 +163,14 @@ The root's ignore-then-negate policy now governs the whole repo from one place.
 cat > wrangler.jsonc <<'EOF'
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "cc4-test-web",
+  "name": "web-app-scaffold-web",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-09-03",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
   "images": { "binding": "IMAGES" },
   "services": [
-    { "binding": "WORKER_SELF_REFERENCE", "service": "cc4-test-web" },
+    { "binding": "WORKER_SELF_REFERENCE", "service": "web-app-scaffold-web" },
   ],
 }
 EOF
@@ -597,7 +597,7 @@ scripts fan out through turbo (`turbo run test:unit`); inside a package they run
 alone. `cd ../..` gets you back.
 
 **Production gate** — from `apps/web`: `pnpm deploy:production` → the
-`cc4-test-web.yoursubdomain.workers.dev` URL renders. Commit.
+`web-app-scaffold-web.yoursubdomain.workers.dev` URL renders. Commit.
 
 **Expect the first load to be a lie.** On a `workers.dev` subdomain being served for the very
 first time, the route takes a moment to propagate, and until it does Cloudflare answers with its
@@ -609,7 +609,7 @@ look:
 
 ```bash
 for i in $(seq 1 10); do
-  code=$(curl -s -o /dev/null -w "%{http_code}" https://cc4-test-web.yoursubdomain.workers.dev/)
+  code=$(curl -s -o /dev/null -w "%{http_code}" https://web-app-scaffold-web.yoursubdomain.workers.dev/)
   echo "attempt $i: $code"; [ "$code" = "200" ] && break; sleep 15
 done
 ```
@@ -626,7 +626,7 @@ Bare `pnpm deploy` inside a package happens to fall through to the script, but t
 `--filter` is present the built-in wins and your script never runs:
 
 ```
-$ pnpm --filter @cc4-test/web deploy
+$ pnpm --filter @web-app-scaffold/web deploy
 [ERR_PNPM_INVALID_DEPLOY_TARGET] This command requires one parameter
 ```
 

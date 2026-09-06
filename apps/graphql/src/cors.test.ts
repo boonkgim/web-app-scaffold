@@ -8,7 +8,7 @@ import worker, { type Env } from "./index";
 // Any absolute origin does: every case below feeds this same string in as the allowlist
 // and asserts against it, so the test pins the *shape* of the answer and never the
 // deployment. Deliberately not the real origin — that lives in wrangler.jsonc alone.
-const WEB = "https://cc4-test-web.example.workers.dev";
+const WEB = "https://web-app-scaffold-web.example.workers.dev";
 const EVIL = "https://evil.example";
 
 const envWith = (origins?: string) =>

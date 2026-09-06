@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: cc4-test
+      POSTGRES_DB: web-app-scaffold
     # /var/lib/postgresql, NOT /var/lib/postgresql/data. Postgres 18 changed where the
     # image puts its data: PGDATA moved to a major-versioned subdirectory
     # (/var/lib/postgresql/18/docker) so `pg_upgrade --link` can work across majors

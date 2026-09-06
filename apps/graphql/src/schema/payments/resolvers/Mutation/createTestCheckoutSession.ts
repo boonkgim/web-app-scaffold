@@ -27,7 +27,7 @@ export const createTestCheckoutSession: NonNullable<
         price_data: {
           currency: "usd",
           unit_amount: TEST_ITEM_CENTS,
-          product_data: { name: "cc4-test test item" },
+          product_data: { name: "web-app-scaffold test item" },
         },
       },
     ],

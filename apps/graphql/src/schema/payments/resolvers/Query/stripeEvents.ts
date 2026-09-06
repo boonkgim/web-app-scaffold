@@ -1,4 +1,4 @@
-import { createDb, desc, stripeEvent } from "@cc4-test/db";
+import { createDb, desc, stripeEvent } from "@web-app-scaffold/db";
 import type { QueryResolvers } from "./../../../types.generated";
 
 // A ceiling the caller cannot raise. The SDL's default is a default, not a limit, and

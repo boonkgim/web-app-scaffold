@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { renderSignInEmail } from "./render";
 
-const URL = "https://cc4-test.example/api/auth/magic-link/verify?token=a";
+const URL = "https://web-app-scaffold.example/api/auth/magic-link/verify?token=a";
 
 test("the html carries the sign-in link", async () => {
   const { html } = await renderSignInEmail(URL);

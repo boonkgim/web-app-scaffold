@@ -32,7 +32,7 @@ export const OUTCOMES: Record<CheckoutStatus, Outcome> = {
     title: "Thank you",
     body: "Your payment is complete. Nothing more is needed from you.",
     href: "/",
-    cta: "Back to cc4-test",
+    cta: "Back to web-app-scaffold",
     role: "status",
   },
   // A visitor lands here on a decline too, and the session is still open. Saying so
@@ -64,6 +64,6 @@ export const UNREADABLE: Outcome = {
   title: "We could not check that payment",
   body: "This checkout could not be confirmed. Try again from the store.",
   href: "/",
-  cta: "Back to cc4-test",
+  cta: "Back to web-app-scaffold",
   role: "alert",
 };

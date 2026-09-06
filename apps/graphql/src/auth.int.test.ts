@@ -1,7 +1,7 @@
 import { expect, test, vi } from "vitest";
 import worker, { type Env } from "./index";
 
-const DOCKER_URL = "postgres://postgres:postgres@localhost:5434/cc4-test";
+const DOCKER_URL = "postgres://postgres:postgres@localhost:5434/web-app-scaffold";
 const CONNECTION = process.env.DATABASE_URL ?? DOCKER_URL;
 const WEB = "http://localhost:3000";
 
@@ -14,7 +14,7 @@ const env = {
   WEB_ORIGIN: WEB,
   BETTER_AUTH_SECRET: "integration-test-secret-not-used-anywhere-else",
   MAIL_TRANSPORT: "log",
-  MAIL_FROM: "cc4-test <no-reply@example.test>",
+  MAIL_FROM: "web-app-scaffold <no-reply@example.test>",
 } as unknown as Env;
 
 const post = (path: string, body: object, cookie?: string) =>

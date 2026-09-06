@@ -1,4 +1,4 @@
-import { createDb, items } from "@cc4-test/db";
+import { createDb, items } from "@web-app-scaffold/db";
 import type { QueryResolvers } from "./../../../types.generated";
 
 // Reads the migrated table rather than just constructing a client. Building a Pool

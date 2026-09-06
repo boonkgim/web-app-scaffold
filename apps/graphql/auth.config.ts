@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { createDb } from "@cc4-test/db";
+import { createDb } from "@web-app-scaffold/db";
 import { authOptions } from "./src/auth-options";
 
 /** Read by `pnpm auth:generate` and by nothing else.
