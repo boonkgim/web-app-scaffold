@@ -61,12 +61,17 @@ git log --oneline | wc -l     # how much of someone else's history came along
 `gh repo create --template` (or "Use this template") starts with one fresh commit and its
 own remote — there is nothing attached, and unpicking it would be busywork.
 
-Otherwise ask which they want. Neither is wrong; they differ in what they keep:
+Otherwise ask, and **default to starting fresh** — offer it first and recommend it. This is
+a new project, not a fork of the scaffold: the inherited commits are the scaffold's own build
+log, authored by someone else, and they describe work the user did not do. `docs/setup` still
+carries that story as files, so starting fresh loses the provenance from `git log` only, which
+is where it was least useful. Keeping the history is the exception, worth choosing only when
+the user actually intends to track the scaffold and merge its updates later.
 
 | Choice | What it does | Suits |
 | ------ | ------------ | ----- |
-| **Detach, keep history** | `git remote remove origin` | they want the scaffold's build history, and `docs/setup` read as the record of how it was built |
-| **Start fresh** | `rm -rf .git && git init -b main && git add -A && git commit -m "Initial commit"` | they want their own history and their own name on it — the template's commits are authored by someone else |
+| **Start fresh** (default) | `rm -rf .git && git init -b main && git add -A && git commit -m "Initial commit"` | almost everyone: their own history, their own authorship, and no way to push at the template |
+| Detach, keep history | `git remote remove origin` | they mean to follow the scaffold and merge its later changes |
 
 `git init -b main` — **with the `-b`**. `init.defaultBranch` is unset on most machines, so a
 bare `git init` names the branch `master`, and the new repo then disagrees with the scaffold's
