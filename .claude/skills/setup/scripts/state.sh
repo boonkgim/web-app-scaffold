@@ -20,6 +20,10 @@ set -uo pipefail
 
 cd "$(dirname "$0")/../../../.." || exit 1     # scripts/ -> setup/ -> skills/ -> .claude/ -> repo root
 
+# The literal token this scaffold ships under — never the current clone's name. rename.mjs
+# excludes this file from its rewrite sweep (its NEVER_TOUCH set) for exactly this reason:
+# a plain sed-style rename would overwrite this constant with the new name too, and the
+# checks below would then always match and misreport a correctly renamed clone as todo.
 readonly TEMPLATE_NAME=web-app-scaffold
 
 scope=all
