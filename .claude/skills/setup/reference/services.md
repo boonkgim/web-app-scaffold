@@ -19,12 +19,12 @@ The rule from SKILL.md, made concrete: before the **first create** in a service,
 the account, print it, and get a yes. Not a paraphrase of it — the literal id or name the
 CLI will act under.
 
-| Service    | Resolve with                              | Show the user                      |
-| ---------- | ----------------------------------------- | ---------------------------------- |
-| Cloudflare | `wrangler whoami`                         | email + the chosen account id/name |
-| Neon       | the browser page `neonctl auth` opens     | the org and email on the consent screen |
-| Stripe     | `cat ~/.config/stripe/config.toml`        | project name + whether it is live-mode |
-| Resend     | the signed-in avatar on resend.com        | the account email                  |
+| Service    | Resolve with                          | Show the user                           |
+| ---------- | ------------------------------------- | --------------------------------------- |
+| Cloudflare | `wrangler whoami`                     | email + the chosen account id/name      |
+| Neon       | the browser page `neonctl auth` opens | the org and email on the consent screen |
+| Stripe     | `cat ~/.config/stripe/config.toml`    | project name + whether it is live-mode  |
+| Resend     | the signed-in avatar on resend.com    | the account email                       |
 
 This is not ceremony. On the machine this skill was built against, **both** wrangler and
 the Stripe CLI defaulted to the wrong account, and one configured Stripe project holds a
@@ -105,10 +105,16 @@ auth endpoints — the CORS failure is silent, the auth one is named.
 
 ## Stripe
 
-The CLI stores several accounts as named *projects*. `cat ~/.config/stripe/config.toml`
+The CLI stores several accounts as named _projects_. `cat ~/.config/stripe/config.toml`
 lists them; each `[name]` section is a project and its keys reveal whether it is test or
 live mode. `default` is a project like any other and was **not** the right one on the
 machine this was verified against.
+
+**`stripe login` stores a restricted key, not the secret key.** So the `sk_test_` and
+`pk_test_` that Phase 3 writes into the two `.env.development` files do not come from the
+CLI at all — they come from `https://dashboard.stripe.com/test/apikeys`, in test mode, as a
+browser step. The CLI's own config is still what resolves _which account_ those keys must
+belong to.
 
 Select explicitly on every call:
 
@@ -125,7 +131,9 @@ stripe --project-name <project> webhook_endpoints create \
 - The `whsec_` in the create response is shown **once**. Capture it straight into
   `wrangler secret put STRIPE_WEBHOOK_SECRET`; re-revealing it later means a dashboard trip.
 - The deployed endpoint's secret is not the local `stripe listen` one. Mixing them gives a
-  400 that reads exactly like a forged signature.
+  400 that reads exactly like a forged signature. The local one comes from
+  `stripe listen --print-secret`, is stable per account and device, and forwards to
+  `localhost:8787/stripe/webhook` — the API Worker directly, never `:3000`.
 - `webhook_endpoints list` / `delete` are the verified cleanup surfaces.
 
 **A live-mode project is a hard stop.** If the resolved project's config holds a live key,
@@ -167,12 +175,12 @@ nothing has to pass through a clipboard:
 printf %s "$SECRET" | npx wrangler@4 secret put BETTER_AUTH_SECRET
 ```
 
-| Secret                  | Source                                                     |
-| ----------------------- | ---------------------------------------------------------- |
+| Secret                  | Source                                                            |
+| ----------------------- | ----------------------------------------------------------------- |
 | `BETTER_AUTH_SECRET`    | `openssl rand -base64 32` (the same value as local, or a new one) |
-| `RESEND_API_KEY`        | the browser step above                                     |
-| `STRIPE_SECRET_KEY`     | the resolved Stripe project's **test** key                 |
-| `STRIPE_WEBHOOK_SECRET` | the `whsec_` from `webhook_endpoints create`               |
+| `RESEND_API_KEY`        | the browser step above                                            |
+| `STRIPE_SECRET_KEY`     | the resolved Stripe project's **test** key                        |
+| `STRIPE_WEBHOOK_SECRET` | the `whsec_` from `webhook_endpoints create`                      |
 
 Guard the Stripe one: refuse anything not containing `_test_` unless the user has
 explicitly said they want live mode and confirmed the account.
