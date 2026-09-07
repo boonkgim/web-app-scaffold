@@ -131,11 +131,15 @@ Ask in the same `AskUserQuestion` round, so the run is not interrupted later:
 1. **Grant the extension the five vendor domains** listed above. Without them the first
    `navigate` fails and the fix is a click only the user can make.
 2. **How the keys move.** Lead with what `preflight.sh`'s `clipboard` row already says.
-   If the relay is available, that is the answer and the question is a confirmation, not a
-   menu: the key goes from the page's Copy button into the file and you never see it. If
-   it is not available, the choice is real — `read_page`, which means each key passes
-   through the model's context, or they paste each value themselves. State the trade-off
-   in one sentence; do not editorialise, and do not decide for them.
+   If the relay is available, there is no real choice to put in front of the user — it is
+   strictly better (the key never enters the model's context) and preflight already proved
+   it works on this machine. Do not add it as an `AskUserQuestion` option; just state it as
+   a fact in your own message ("keys will move by clipboard relay — copy on the page, and
+   the value goes straight into the file without me seeing it") and proceed. Only turn it
+   into a real question when the relay is *not* available: then the choice is genuine —
+   `read_page`, which means each key passes through the model's context, or they paste each
+   value themselves. State that trade-off in one sentence; do not editorialise, and do not
+   decide for them.
 
 If they decline the extension entirely, everything still works: fall back to naming the
 page and the clicks, and let them paste each value. Say that the run will be slower and
