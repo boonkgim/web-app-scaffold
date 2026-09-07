@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Turn a fresh clone of this scaffold into the user's own project in their own accounts — check what is installed and what is already done, rename it off the template name, stand up a complete development environment (Docker Postgres, Stripe test mode, Resend), then optionally provision Neon, Hyperdrive, Cloudflare Workers and the deployed Stripe webhook. Use when someone says set up this project, configure my clone, make this scaffold mine, get this running locally, or deploy this for the first time. Rerun it to add production later. Invoked as /setup.
+description: Turn a fresh clone of this scaffold into the user's own project in their own accounts — check what is installed and what is already done, rename it off the template name, then drive Chrome to sign in to each vendor and collect the keys, standing up a complete development environment (Docker Postgres, Stripe test mode, Resend) and optionally provisioning Neon, Hyperdrive, Cloudflare Workers and the deployed Stripe webhook. Use when someone says set up this project, configure my clone, make this scaffold mine, get this running locally, or deploy this for the first time. Rerun it to add production later. Invoked as /setup.
 ---
 
 # setup — making this clone yours
@@ -34,6 +34,38 @@ half-configured development environment is the failure mode this ordering exists
 prevent: it fails later, somewhere unrelated, with a message about neither Stripe nor mail.
 
 Per-service commands, flags and account-resolution recipes: `reference/services.md`.
+The browser playbook, which most of the steps below run through: `reference/browser.md`.
+
+## Drive the browser; do not read instructions aloud
+
+Every step a person would otherwise do in a tab — signing up, signing in, approving an
+OAuth screen, copying a key off a dashboard — you do with the `mcp__claude-in-chrome`
+tools. Handing the user a URL and a list of clicks is the fallback, not the plan.
+
+What stays on the CLI is narrow: the **verified creates** in `services.md`
+(`neonctl projects create`, `wrangler hyperdrive create`, `stripe webhook_endpoints
+create`, `wrangler secret put`), plus `stripe listen`, `pnpm`, `docker` and `git`. A
+command checked live against a real account beats clicking through a console that
+redesigns itself. Everything else is the browser's.
+
+Three things to settle in Phase 1, before any of it starts:
+
+- **Site permissions are the user's to grant and you cannot.** Ask once for all five
+  domains: `dashboard.stripe.com`, `resend.com`, `console.neon.tech`,
+  `dash.cloudflare.com`, `github.com`.
+- **Keys move by clipboard relay, not by reading them.** Click the page's own Copy button,
+  then pipe the clipboard into the file:
+  `clipboard.sh --paste --expect re_ >> …`. The value goes browser → clipboard → file and
+  never enters the model's context. `preflight.sh` reports whether the relay works here;
+  it needs the browser and the shell on the same machine, so an ssh or web session falls
+  back to `read_page` (the model sees the key) or to the user pasting. Say which one is in
+  play, once, and honour it for the whole run.
+- **A key goes into its destination file and nowhere else.** Never into a reply, a summary,
+  a commit message or a filename. Confirm by shape — `clipboard.sh --shape` prints
+  "36 chars, starts `re_a`" — never by value, then `--clear`.
+
+Signup forms, payment details, email verification and MFA stay the user's own: drive them
+to the page, say what to do, and wait.
 
 ## The one rule that outranks the phase order
 
@@ -91,6 +123,23 @@ nothing, and production is one rerun away. Never present production as the finis
 Say plainly, in the question itself, that production creates real resources in real
 accounts. If they choose development-then-production, that is a statement of intent, not
 consent for Phase 4 — you still stop at the end of Phase 3 and confirm.
+
+### And settle the browser, in the same breath
+
+Ask in the same `AskUserQuestion` round, so the run is not interrupted later:
+
+1. **Grant the extension the five vendor domains** listed above. Without them the first
+   `navigate` fails and the fix is a click only the user can make.
+2. **How the keys move.** Lead with what `preflight.sh`'s `clipboard` row already says.
+   If the relay is available, that is the answer and the question is a confirmation, not a
+   menu: the key goes from the page's Copy button into the file and you never see it. If
+   it is not available, the choice is real — `read_page`, which means each key passes
+   through the model's context, or they paste each value themselves. State the trade-off
+   in one sentence; do not editorialise, and do not decide for them.
+
+If they decline the extension entirely, everything still works: fall back to naming the
+page and the clicks, and let them paste each value. Say that the run will be slower and
+that you cannot see whether a page matched what you described.
 
 ## Phase 2 — project identity
 
@@ -221,8 +270,19 @@ Run the account gate first: `cat ~/.config/stripe/config.toml`, show the user th
 names, and get an explicit choice. **A live-mode project is a hard stop** — say so and ask.
 
 `stripe login` stores a restricted key, not the secret key, so the two API keys come from
-the dashboard rather than the CLI. That makes this a Phase 5 browser step:
-`https://dashboard.stripe.com/test/apikeys`, in **test** mode.
+the dashboard rather than the CLI — drive it: `tabs_context_mcp`, a new tab on
+`https://dashboard.stripe.com/test/apikeys`, `read_page`, and confirm the page says **test
+mode** before touching anything on it. Then relay each key separately, straight into its
+file:
+
+```bash
+{ printf 'STRIPE_SECRET_KEY='; bash .claude/skills/setup/scripts/clipboard.sh --paste --expect sk_test_; printf '\n'; } \
+  >> apps/graphql/.env.development
+```
+
+`--expect sk_test_` is doing real work: it fails on a stale clipboard when the copy button
+did not fire, and it fails on a **live** key before that key reaches a file.
+`reference/browser.md` has the per-page detail.
 
 | Key                                  | File                            | Note                                                        |
 | ------------------------------------ | ------------------------------- | ----------------------------------------------------------- |
@@ -256,9 +316,11 @@ domain but **only delivers to the Resend account owner's own address**, so this 
 normally be that address. Keep the answer; Phase 4 writes the same value into
 `wrangler.jsonc`.
 
-Then get `RESEND_API_KEY` from `https://resend.com/api-keys` — a Phase 5 browser step,
-because Resend has no key-creation API — and set `MAIL_TRANSPORT=resend` so mail is actually
-delivered and the sign-in flow can be exercised end to end.
+Then create `RESEND_API_KEY` at `https://resend.com/api-keys` — browser-only, because
+Resend has no key-creation API at all — and set `MAIL_TRANSPORT=resend` so mail is actually
+delivered and the sign-in flow can be exercised end to end. The value is shown **once**,
+with a copy button beside it: relay it (`--expect re_`) in the same step, or it is gone and
+the user makes another.
 
 `MAIL_TRANSPORT=log` remains available and renders to the log without sending. It is a
 **deliberate downgrade, not a default**: offer it only if the user says they do not want a
@@ -291,7 +353,9 @@ resources in real accounts.
 ## Phase 4 — production
 
 Do not start this without the account gate above, per service, at the moment of first
-create. The order below is a dependency chain with one cycle in it — do not reorder it.
+create. Each of `wrangler login` and `neonctl auth` opens a consent page — drive it, and
+**read the account and org on that page back to the user before approving**. That page is
+the account gate, not a formality on the way to it. The order below is a dependency chain with one cycle in it — do not reorder it.
 
 | #   | Step                                                         | Needs |
 | --- | ------------------------------------------------------------ | ----- |
@@ -322,27 +386,36 @@ Three things reliably go wrong here, all covered in `reference/services.md`:
   binding does not resolve across accounts. `state.sh` checks that they agree.
 
 The step-6 `whsec_` is a **different secret** from the Phase 3 one and belongs in
-`wrangler secret put STRIPE_WEBHOOK_SECRET`, never in `.env.development`.
+`wrangler secret put STRIPE_WEBHOOK_SECRET`, never in `.env.development`. Step 7's secrets
+pipe in the same way the relay does — `wrangler secret put` reads stdin, so nothing needs
+to be echoed:
+
+```bash
+bash .claude/skills/setup/scripts/clipboard.sh --paste --expect re_ | npx wrangler@4 secret put RESEND_API_KEY
+```
 
 Run `packages/db`'s `migrate:production` against the Neon direct URL, not through
 Hyperdrive; the `project-db` skill owns that step.
 
-## Phase 5 — browser steps
+## Phase 5 — the browser itself
 
-The fallback for anything with no API, in **both** phases: the Stripe test API keys
-(`https://dashboard.stripe.com/test/apikeys`), the Resend API key
-(`https://resend.com/api-keys` — Resend has no key-creation API), and any vendor signup
-where the user has no account yet.
+Not a phase in sequence: it runs **throughout** Phases 3 and 4, wherever a vendor page is
+the surface. `reference/browser.md` is the playbook — the CLI/browser split, the
+`read_page` → act → `read_page` loop, the secret-handling rules, and what to look for on
+each vendor's page.
 
-Drive Chrome with `mcp__claude-in-chrome`: **`tabs_context_mcp` first, always**, then
-`tabs_create_mcp` / `navigate`, then `read_page` before acting, and `computer` only for
-what reading cannot do. Details and the Resend specifics are in `reference/services.md`.
+The four rules worth carrying without opening it:
 
-- Open a **new** tab. Never navigate a tab the user is using.
-- Never echo a key into the transcript. Write it into the `.env.development` file, or pipe
-  it into `wrangler secret put`, which reads stdin.
-- Signup, payment details and email verification are the user's steps. Get them to the
-  right page, say what to do, and wait — do not fill in a signup form on their behalf.
+- **`tabs_context_mcp` first, always**, then a **new** tab. Never navigate a tab the user
+  is using.
+- **`read_page` before every action**, and again after, to confirm the page changed. A
+  click aimed at a remembered layout hits whatever moved into that spot.
+- **Never trigger an `alert`, `confirm` or `prompt`.** A blocked dialog freezes the
+  extension until the user dismisses it by hand.
+- **Stop after two or three failures on a page.** Say what you tried and hand it over;
+  do not keep clicking.
+- **Keys move by clipboard relay**, with `--expect` every time, `--shape` to confirm and
+  `--clear` after.
 
 ## Rerunning /setup
 
@@ -373,6 +446,9 @@ today's create.
   wrong flag on a create command is a resource in the wrong shape, not an error message.
 - **Report what was created, as you go.** Names and ids, in the transcript, so the user can
   find and delete them. The undo commands are at the end of `reference/services.md`.
+- **A page that does not match what `browser.md` describes is a stop, not a puzzle.**
+  Consoles get redesigned. Say what you found instead, and let the user point at the right
+  control rather than clicking through a layout you are inferring.
 - **Report what was skipped, too.** A development environment with `MAIL_TRANSPORT=log` or
   placeholder Stripe keys is a partial one; name it as such rather than reporting Phase 3
   complete.

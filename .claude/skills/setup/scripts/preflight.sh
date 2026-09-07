@@ -165,6 +165,35 @@ if [ "$scope" = development ] || [ "$scope" = all ]; then
   # creating keys. Listed anyway so nobody discovers halfway through that mail is dead.
   row_you "resend acct" "free account + an API key from https://resend.com/api-keys (Phase 5 opens it for you)"
 
+  # --- Chrome + the extension ----------------------------------------------
+  # /setup drives the browser for every signup, login and key, so this is a development
+  # requirement now, not a nicety. Only half of it is probeable: a Chrome binary can be
+  # found, but whether the extension is installed and permissioned for the five vendor
+  # domains is a question for the user — the skill cannot grant a site permission.
+  chrome_found=""
+  for c in google-chrome google-chrome-stable chromium chromium-browser; do
+    command -v "$c" >/dev/null 2>&1 && { chrome_found="$c"; break; }
+  done
+  # macOS installs an .app rather than something on PATH.
+  [ -z "$chrome_found" ] && [ -d "/Applications/Google Chrome.app" ] && chrome_found="Google Chrome.app"
+  if [ -n "$chrome_found" ]; then
+    row_you chrome "$chrome_found — /setup needs the Claude extension permissioned for stripe, resend, neon, cloudflare, github"
+  else
+    row_you chrome "no Chrome found — /setup drives it for signups and keys; without it you paste each value by hand"
+  fi
+
+  # --- the clipboard relay --------------------------------------------------
+  # How a key gets from a vendor's dashboard into an env file without the model reading
+  # it: click the page's Copy button, then pipe the clipboard straight into the file.
+  # clipboard.sh knows the per-OS backends; asking it is better than duplicating that
+  # detection here. A miss is a warning, not a block — the fallbacks still work.
+  clip_check="$(bash "$(dirname "$0")/clipboard.sh" --check 2>&1)"
+  if [ $? -eq 0 ]; then
+    row_ok clipboard "${clip_check#ok } — keys can go from the browser to a file without passing through the model"
+  else
+    row_warn clipboard "${clip_check#unavailable — } — /setup will read keys with read_page instead, or you paste them"
+  fi
+
   # --- openssl -------------------------------------------------------------
   # Only used to mint BETTER_AUTH_SECRET. Node's crypto does the same job, so a miss is
   # a warning with the substitute spelled out rather than a blocker.

@@ -1,5 +1,8 @@
 # Per-service detail for `/setup`
 
+CLI surfaces, verified live. The browser side of `/setup` — which is most of its steps —
+is in `browser.md`.
+
 ## Contents
 
 - [The account gate, service by service](#the-account-gate-service-by-service)
@@ -8,7 +11,7 @@
 - [Hyperdrive](#hyperdrive)
 - [The two-pass deploy](#the-two-pass-deploy)
 - [Stripe](#stripe)
-- [Resend, and the browser fallback](#resend-and-the-browser-fallback)
+- [Resend](#resend)
 - [Secrets](#secrets)
 - [Undo](#undo)
 - [Verified surfaces — as of 2026-09-06](#verified-surfaces--as-of-2026-09-06)
@@ -139,23 +142,14 @@ stripe --project-name <project> webhook_endpoints create \
 **A live-mode project is a hard stop.** If the resolved project's config holds a live key,
 say so and ask before anything is created, and never pipe a live key into a secret.
 
-## Resend, and the browser fallback
+## Resend
 
-Resend has no public API for creating API keys, so this step is a browser step. So is any
-vendor signup where the user has no account yet (Neon, Resend, Stripe, Cloudflare).
+Resend has **no public API for creating API keys**, so the key is browser-only: there is no
+CLI fallback to prefer, and `browser.md` owns the how. The key is shown once — read the
+page and write the value in the same step.
 
-Drive it with the `mcp__claude-in-chrome` tools, in this order:
-
-1. `tabs_context_mcp` — always first. It reports what tabs exist and which are permitted;
-   acting before it is how you end up typing into someone's unrelated tab.
-2. `tabs_create_mcp` / `navigate` — open `https://resend.com/api-keys` in a **new** tab.
-3. `read_page` — read before clicking. Prefer it to screenshots; it is cheaper and the
-   result is text you can quote back to the user.
-4. `computer` — only for what `read_page` cannot do: clicking the create button, typing a
-   key name.
-
-Then: copy the `re_` key straight into `wrangler secret put RESEND_API_KEY` and into
-`apps/graphql/.env.development`. Never echo it into the transcript.
+Destinations: `apps/graphql/.env.development` for development, and
+`wrangler secret put RESEND_API_KEY` for production.
 
 `MAIL_FROM` ships as `<name> <onboarding@resend.dev>` — the rename fills in `<name>`, and
 `onboarding@resend.dev` is Resend's shared sender, which needs no verified domain but
