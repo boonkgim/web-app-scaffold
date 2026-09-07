@@ -140,7 +140,10 @@ stripe --project-name <project> webhook_endpoints create \
 - `webhook_endpoints list` / `delete` are the verified cleanup surfaces.
 
 **A live-mode project is a hard stop.** If the resolved project's config holds a live key,
-say so and ask before anything is created, and never pipe a live key into a secret.
+say so and ask before anything is created, and never pipe a live key into a secret — unless
+the user has explicitly asked to go live, in which case this is `SKILL.md`'s **Stripe, live
+mode** section, not this one; it swaps the secret key, the publishable key and the webhook
+endpoint together, because moving only one of the three is how this goes wrong silently.
 
 ## Resend
 
@@ -176,8 +179,11 @@ printf %s "$SECRET" | npx wrangler@4 secret put BETTER_AUTH_SECRET
 | `STRIPE_SECRET_KEY`     | the resolved Stripe project's **test** key                        |
 | `STRIPE_WEBHOOK_SECRET` | the `whsec_` from `webhook_endpoints create`                      |
 
-Guard the Stripe one: refuse anything not containing `_test_` unless the user has
-explicitly said they want live mode and confirmed the account.
+Guard the Stripe one: refuse anything not containing `_test_` unless the user has explicitly
+said they want live mode and confirmed the account — and even then, follow `SKILL.md`'s
+**Stripe, live mode** section rather than swapping this one secret in isolation. The
+publishable key (`apps/web/.env.production`, build-time, not a `wrangler secret`) and the
+webhook endpoint (mode-scoped, so the test one does not carry over) have to move with it.
 
 ## Undo
 

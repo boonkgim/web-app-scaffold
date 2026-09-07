@@ -152,13 +152,18 @@ written here. If the page does not match, say so rather than clicking hopefully.
   **Test mode** before reading anything. Both rows have a copy control; the secret key
   needs a reveal click first. Relay each one separately — `--expect pk_test_`, then
   `--expect sk_test_` — rather than copying both and sorting them out afterwards.
-- **A `sk_live_` or a page in live mode is a hard stop.** Do not read it, do not write it,
-  say so and ask.
+- **A `sk_live_` or a page in live mode is a hard stop, outside `SKILL.md`'s explicit
+  "Stripe, live mode" section.** Do not read it, do not write it, say so and ask. Inside
+  that section, a page reading **Live mode** is exactly the page to be on — confirm it the
+  same way you confirm Test mode here, then proceed.
 - **Account picker:** the dashboard is per-account and the switcher is top-left. The
   account shown here must be the same one the CLI's `--project-name` resolves to;
   confirm both, because a mismatch produces keys that work and a webhook that never fires.
-- Webhook endpoint creation stays on the CLI (`stripe webhook_endpoints create`), because
-  the `whsec_` in its response is easier to capture than a modal's reveal-once field.
+- Webhook endpoint creation stays on the CLI (`stripe webhook_endpoints create`) in test
+  mode, because the `whsec_` in its response is easier to capture than a modal's
+  reveal-once field. **In live mode, do this in the dashboard instead** —
+  `https://dashboard.stripe.com/webhooks` — because no live-mode flag for that command is
+  verified; see `SKILL.md`'s "Stripe, live mode" section.
 
 ### Resend
 

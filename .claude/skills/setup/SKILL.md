@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Turn a fresh clone of this scaffold into the user's own project in their own accounts — check what is installed and what is already done, rename it off the template name, then drive Chrome to sign in to each vendor and collect the keys, standing up a complete development environment (Docker Postgres, Stripe test mode, Resend) and optionally provisioning Neon, Hyperdrive, Cloudflare Workers and the deployed Stripe webhook. Use when someone says set up this project, configure my clone, make this scaffold mine, get this running locally, or deploy this for the first time. Rerun it to add production later. Invoked as /setup.
+description: Turn a fresh clone of this scaffold into the user's own project in their own accounts — check what is installed and what is already done, rename it off the template name, then drive Chrome to sign in to each vendor and collect the keys, standing up a complete development environment (Docker Postgres, Stripe test mode, Resend) and optionally provisioning Neon, Hyperdrive, Cloudflare Workers and the deployed Stripe webhook. Use when someone says set up this project, configure my clone, make this scaffold mine, get this running locally, or deploy this for the first time. Rerun it to add production later. Also use when someone explicitly asks to switch Stripe to live mode or accept real payments on an already-deployed clone — invoked as /setup stripe production, a separate step from the rest of setup and never inferred from a plain "set up production" request. Invoked as /setup.
 ---
 
 # setup — making this clone yours
@@ -32,6 +32,13 @@ real card: Neon, Hyperdrive, deployed Workers, a deployed webhook endpoint, and 
 **Set up development fully, and finish it, before production is even discussed.** A
 half-configured development environment is the failure mode this ordering exists to
 prevent: it fails later, somewhere unrelated, with a message about neither Stripe nor mail.
+
+**Phase 4 itself still deploys on Stripe test keys.** "Production" here means Cloudflare
+Workers, Neon and a deployed webhook endpoint reachable by strangers — not a Worker that can
+charge them. Going live with Stripe is a further, separate, explicit step: see **Stripe,
+live mode** below. Never fold it into Phase 4's own choices, and never enter it because the
+user said they want production — that sentence means "deploy it," not "start charging
+cards."
 
 Per-service commands, flags and account-resolution recipes: `reference/services.md`.
 The browser playbook, which most of the steps below run through: `reference/browser.md`.
@@ -401,6 +408,79 @@ bash .claude/skills/setup/scripts/clipboard.sh --paste --expect re_ | npx wrangl
 Run `packages/db`'s `migrate:production` against the Neon direct URL, not through
 Hyperdrive; the `project-db` skill owns that step.
 
+## Stripe, live mode — separate and explicit
+
+Not part of the phase order above, and never entered on inference — only when the user
+explicitly asks, in words: `/setup stripe production`, "go live with Stripe," "switch to
+real payments." Phase 4 on its own leaves the deploy on Stripe **test** keys indefinitely,
+and that is correct — most clones should stay there until there is a real reason to accept
+a real card. Elsewhere in this document, "a live-mode key is a hard stop" still means
+exactly that; this section is the one place it does not, and only once its own gate below
+has run.
+
+**Precondition:** Phase 4 is done — `state.sh --scope production` reports `complete`. This
+section swaps keys in an already-deployed app; it does not stand one up. If production is
+not deployed yet, say so and offer to run Phase 4 first, on test keys, and come back here.
+
+### 1 — the account gate, again, and harder
+
+`cat ~/.config/stripe/config.toml`, resolve the project exactly as Phase 3/4 did, and show
+the user its name. The question this time is not "is this the right test account" but "do
+you want this project charging real cards on `<the deployed URL>` starting now" — ask it in
+those words and get an explicit yes before touching anything. A confirmation from earlier in
+the run, including Phase 3/4's own account gate, is not consent for this one.
+
+### 2 — live keys, from the dashboard, never the CLI
+
+Same relay discipline as test mode, a different page and a different prefix:
+`https://dashboard.stripe.com/apikeys` (no `/test/`). Confirm the page reads **Live mode**
+before reading anything on it — the same check as confirming Test mode in Phase 3, just the
+other answer — then relay `--expect sk_live_` and `--expect pk_live_` in place of the
+`_test_` ones. `stripe login`'s restricted key is still not the secret key, same as test
+mode: the dashboard is the only source for either.
+
+### 3 — the secret key is a runtime swap; the publishable key is not
+
+```bash
+bash .claude/skills/setup/scripts/clipboard.sh --paste --expect sk_live_ | npx wrangler@4 secret put STRIPE_SECRET_KEY
+```
+
+Takes effect immediately — no rebuild, no redeploy. `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is
+different: `apps/web/.env.example` says why — it is inlined into the browser bundle by
+`next build`, not read at runtime, so writing the new `pk_live_` into
+`apps/web/.env.production` does nothing on its own until the Worker is rebuilt and
+redeployed:
+
+```bash
+pnpm --filter <name>/web deploy:production
+```
+
+Skipping this step is the one way this section fails silently: the API takes real cards,
+Embedded Checkout still mounts with the old `pk_test_`, and the mismatch surfaces as a
+confusing client-side error rather than a clean one.
+
+### 4 — a new webhook endpoint, in the dashboard
+
+Stripe webhook endpoints are mode-scoped: the test-mode `we_...` from Phase 4 step 6 does
+not start firing for live events, and it does not need deleting either — it costs nothing
+idle. Create the live one at `https://dashboard.stripe.com/webhooks`, not the CLI —
+`services.md`'s `stripe webhook_endpoints create` is verified for test mode only, there is
+no verified live-mode flag for it, and per the rule against inventing a CLI flag, this stays
+a browser step until someone verifies one live and adds it to `services.md`. Same URL as
+before — `https://<name>-graphql.<sub>.workers.dev/stripe/webhook` — same one event,
+`checkout.session.completed`. The signing secret is shown once; capture it straight into:
+
+```bash
+bash .claude/skills/setup/scripts/clipboard.sh --paste --expect whsec_ | npx wrangler@4 secret put STRIPE_WEBHOOK_SECRET
+```
+
+### 5 — say it plainly
+
+Close with a summary the user cannot misread: which project, which URL, and the fact that it
+is now charging real cards. Reverting means repeating this section with the test-mode keys
+and a new test-mode webhook endpoint — there is no toggle, only doing it again with the
+other keys.
+
 ## Phase 5 — the browser itself
 
 Not a phase in sequence: it runs **throughout** Phases 3 and 4, wherever a vendor page is
@@ -443,8 +523,11 @@ today's create.
 
 - **Ask, do not infer, for anything account-shaped.** A name, an account id, a Stripe
   project, a sender address. Guessing these is cheap to type and expensive to unwind.
-- **A live-mode Stripe key stops the phase.** Say so and ask. Never pipe one into a secret,
-  and never test against one. `state.sh` flags an `sk_live_` in `.env.development` too.
+- **A live-mode Stripe key stops the phase — everywhere except the "Stripe, live mode"
+  section, and only after its own account gate has run.** Say so and ask. Never pipe one
+  into a secret, and never test against one, outside that section. `state.sh` flags an
+  `sk_live_` in `.env.development` unconditionally — a live key never belongs in a
+  development file, live-mode section or not.
 - **Never invent a CLI flag.** `reference/services.md` lists what was verified live. If
   what you need is not there, do that step in the vendor's web console and say why — a
   wrong flag on a create command is a resource in the wrong shape, not an error message.
