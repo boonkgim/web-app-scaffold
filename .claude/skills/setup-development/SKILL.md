@@ -147,6 +147,16 @@ tells you which case you are in. A repo made with `gh repo create --template` (o
 template") starts with one fresh commit and its own remote — there is nothing attached, and
 unpicking it would be busywork.
 
+**No `.git` at all is a third case, not a variant of the one above — act, don't ask.** It
+happens when something deleted `.git` before this skill ran (a workshop's clone step, for
+example). `state.sh` calls this out as its own `todo` row rather than folding it into "no
+origin," because unlike that case there is genuinely nothing here yet: `rename.mjs` commits
+as part of the rename and needs a clean tree to gate on, so a repo has to exist first. There
+is also no real choice to put to the user — fresh vs. keep-history only differs by whether
+scaffold commits survive, and none are present either way — so just run
+`git init -b main && git add -A && git commit -m "Initial commit"` and continue; don't spend
+an `AskUserQuestion` on it.
+
 Otherwise ask, and **default to starting fresh** — offer it first and recommend it. This is
 a new project, not a fork of the scaffold: the inherited commits are the scaffold's own build
 log, authored by someone else, and they describe work the user did not do. `docs/setup` still

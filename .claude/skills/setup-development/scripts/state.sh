@@ -92,13 +92,22 @@ if [ "$scope" = development ] || [ "$scope" = all ]; then
   # Origin still on the scaffold is the one state here that can destroy someone else's
   # work: in a workshop the attendee has push rights, so the first push overwrites the
   # template. Worth a row of its own even though it is not strictly setup progress.
-  origin="$(git remote get-url origin 2>/dev/null)"
-  if [ -z "$origin" ]; then
-    row_done "git origin" "none — nothing to push at by accident"
-  elif printf '%s' "$origin" | grep -q "$TEMPLATE_NAME"; then
-    row_todo "git origin" "still the scaffold ($origin) — setup-development detaches it"
+  #
+  # `git remote get-url origin` prints nothing both when a repo exists with no origin
+  # AND when there is no repo at all (e.g. `.git` was deleted before this skill ran) —
+  # so check for a repo first. The two cases need different verdicts: no origin on an
+  # existing repo is genuinely done; no repo at all still needs `git init`.
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    row_todo "git origin" "no git repository — setup-development runs git init"
   else
-    row_done "git origin" "$origin"
+    origin="$(git remote get-url origin 2>/dev/null)"
+    if [ -z "$origin" ]; then
+      row_done "git origin" "none — nothing to push at by accident"
+    elif printf '%s' "$origin" | grep -q "$TEMPLATE_NAME"; then
+      row_todo "git origin" "still the scaffold ($origin) — setup-development detaches it"
+    else
+      row_done "git origin" "$origin"
+    fi
   fi
 
   [ -d node_modules ] && row_done "dependencies" "node_modules present" \
