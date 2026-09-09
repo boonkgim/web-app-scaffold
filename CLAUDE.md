@@ -14,3 +14,16 @@ pnpm workspace. What is in it:
 - `packages/email` — React Email templates and the Resend transport. `apps/graphql` is its
   only consumer. See `.claude/skills/project-email/SKILL.md`.
 - `packages/config` — shared tsconfig and ESLint base, extended by every package.
+
+## Running it locally
+
+`pnpm dev` brings up `apps/web` (3000) and `apps/graphql` (8787) against Docker Postgres,
+but that alone does not forward Stripe webhooks. When starting the local server for work
+that touches checkout, also start, in its own terminal:
+
+```bash
+stripe listen --events checkout.session.completed --forward-to localhost:8787/stripe/webhook
+```
+
+Otherwise `/stripe/webhook` never receives an event. See
+`.claude/skills/project-payments/SKILL.md`.

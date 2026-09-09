@@ -103,6 +103,17 @@ No cloud account is needed for any of this, and none of it costs money. Local ma
 to the log and sends nothing (`MAIL_TRANSPORT=log`), so a wrong address surfaces as a log
 line rather than a bounce.
 
+`pnpm dev` does not forward Stripe webhooks by itself. Working on checkout needs one more
+process, in its own terminal:
+
+```bash
+stripe listen --events checkout.session.completed --forward-to localhost:8787/stripe/webhook
+```
+
+Without it, `/stripe/webhook` never receives an event and a completed checkout looks like
+nothing happened. See `.claude/skills/project-payments/SKILL.md` for the `whsec_` it prints
+and why the `--events` filter matters.
+
 ## The verify loop
 
 ```bash
