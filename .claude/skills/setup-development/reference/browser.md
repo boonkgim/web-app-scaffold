@@ -21,15 +21,27 @@ The split is therefore:
 
 ## Before the first navigate
 
-1. **`tabs_context_mcp` first, always.** It reports which tabs exist and which sites are
-   permitted. Acting before it is how you end up typing into someone's unrelated tab.
-2. **The extension is permissioned per site, by the user, and you cannot grant it.** If a
+1. **`list_connected_browsers` first, before anything else touches Chrome.** This skill
+   is routinely driven from a machine that is not the one the user is sitting at — the
+   shell and the browser extension do not have to be on the same box, and when more than
+   one Chrome has the extension installed, silently taking the default connection is how
+   a signup or a key-copy ends up in the wrong browser, on a machine the user isn't even
+   looking at. Ask via `AskUserQuestion`, listing every connected browser by its display
+   name (deviceId in parentheses), plus the "open a confirmation screen in every
+   connected extension" option — never guess which one is theirs. Call `select_browser`
+   with the chosen deviceId, or `switch_browser` if they pick the confirmation-screen
+   option. Only one connected browser still gets confirmed, not assumed — name it back to
+   the user ("driving `<display name>`") before the first navigate.
+2. **`tabs_context_mcp` next, always**, on the browser just selected. It reports which
+   tabs exist and which sites are permitted. Acting before it is how you end up typing
+   into someone's unrelated tab.
+3. **The extension is permissioned per site, by the user, and you cannot grant it.** If a
    vendor's domain is not permitted, the call fails and the fix is the user clicking
    allow in the extension. Ask for the domains up front, in one go, rather than hitting
    the wall four times:
    `dashboard.stripe.com`, `resend.com`, `console.neon.tech`, `dash.cloudflare.com`,
    `github.com`.
-3. **Open a new tab** with `tabs_create_mcp`. Never navigate a tab the user is using.
+4. **Open a new tab** with `tabs_create_mcp`. Never navigate a tab the user is using.
 
 ## The loop, per page
 

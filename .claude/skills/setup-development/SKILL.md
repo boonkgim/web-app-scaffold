@@ -105,9 +105,14 @@ over. Otherwise resume at whatever it marks `todo`.
 
 Ask in the same `AskUserQuestion` round, so the run is not interrupted later:
 
-1. **Grant the extension the two vendor domains** listed above. Without them the first
+1. **Which connected browser is theirs.** `list_connected_browsers` first — this skill can
+   run from a different machine than the one the user is looking at, and more than one
+   Chrome can have the extension installed. Never take the default connection silently;
+   see `reference/browser.md`'s "Before the first navigate" for the exact flow
+   (`select_browser` or `switch_browser`, then name the chosen browser back to the user).
+2. **Grant the extension the two vendor domains** listed above. Without them the first
    `navigate` fails and the fix is a click only the user can make.
-2. **How the keys move.** Lead with what `preflight.sh`'s `clipboard` row already says.
+3. **How the keys move.** Lead with what `preflight.sh`'s `clipboard` row already says.
    If the relay is available, there is no real choice to put in front of the user — it is
    strictly better (the key never enters the model's context) and preflight already proved
    it works on this machine. Do not add it as an `AskUserQuestion` option; just state it as
