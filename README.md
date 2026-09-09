@@ -48,16 +48,20 @@ commit.
 
 ### The guided path
 
-If you use [Claude Code](https://claude.com/claude-code), the repo ships a `/setup` skill
-that does all of the below — checks your toolchain, renames the project off the template
-name, brings the local stack up, and _optionally_ provisions Neon, Cloudflare, Stripe and
-Resend in your own accounts:
+If you use [Claude Code](https://claude.com/claude-code), the repo ships a `/setup-development`
+skill that does all of the below — checks your toolchain, renames the project off the
+template name, and brings up a complete local stack against Stripe test mode and Resend in
+your own accounts:
 
 ```
-/setup
+/setup-development
 ```
 
-It stops and asks before anything creates a real resource in a real account.
+Nothing here is deployed and nothing costs money. When you're ready to put it on real
+infrastructure for the first time, `/setup-production` provisions Neon, Cloudflare and the
+deployed Stripe webhook — and it stops and asks before anything creates a real resource in a
+real account. After that first deploy, shipping every later change is `/deploy-production`,
+not `/setup-production` again.
 
 ### By hand
 
@@ -122,9 +126,9 @@ an integration test and belongs in a `*.int.test.ts` file.
 
 ## Deploying
 
-Deployment is Phase 4 of `/setup`, and the order is a dependency chain with a cycle in it —
-the API needs the web Worker's URL for CORS, and the web Worker needs the API to exist.
-`/setup` walks it; `docs/setup/` explains it. Briefly:
+Going live for the first time is `/setup-production`. The order is a dependency chain with
+a cycle in it — the API needs the web Worker's URL for CORS, and the web Worker needs the
+API to exist. `/setup-production` walks it; `docs/setup/` explains it. Briefly:
 
 1. Neon project → **direct** (unpooled) connection string
 2. Hyperdrive binding → id into `apps/graphql/wrangler.jsonc`
@@ -136,6 +140,10 @@ the API needs the web Worker's URL for CORS, and the web Worker needs the API to
 
 Secrets are set with `wrangler secret put` and stored by Cloudflare. A `vars` entry would
 be plaintext in a committed file, which is why the four secrets have no counterpart there.
+
+Once that infrastructure exists, shipping every later feature is `/deploy-production` — it
+runs the migration review, deploys the API then the web app in that order, and observes the
+live result. It never provisions anything; that stays `/setup-production`'s job, run once.
 
 ## Repo conventions
 

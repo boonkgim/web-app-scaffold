@@ -214,7 +214,6 @@ node_modules/
 .cache
 .env*
 !.env.example
-.claude/skills/setup-project
 EOF
 ```
 

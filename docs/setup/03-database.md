@@ -268,8 +268,12 @@ value rather than a real one. One entry covers both targets, since they use the 
 
 ```bash
 cat > .env.example <<'EOF'
-# .env.development (Docker) and .env.production (Neon direct/unpooled) both define this
-# same key; the command you run picks the file. Neither is committed.
+# .env.development (Docker), .env.rehearsal (a Neon branch of production) and
+# .env.production (Neon direct/unpooled) all define this same key; the command you run
+# picks the file. None of them is committed.
+#
+# .env.rehearsal is written for one rehearsal and deleted with the branch it names.
+# See the `deploy-production` skill, "The migration review".
 DATABASE_URL=postgres://user:password@localhost:5434/dbname
 EOF
 ```

@@ -2,8 +2,8 @@
 // Rename the scaffold from its template token to the user's project name.
 //
 // Usage:
-//   node .claude/skills/setup/scripts/rename.mjs <new-name>            # dry run (default)
-//   node .claude/skills/setup/scripts/rename.mjs <new-name> --apply    # actually rewrite
+//   node .claude/skills/setup-development/scripts/rename.mjs <new-name>            # dry run (default)
+//   node .claude/skills/setup-development/scripts/rename.mjs <new-name> --apply    # actually rewrite
 //   ... --apply --allow-dirty                                          # skip the clean-tree gate
 //
 // Why a script and not an instruction: the token appears in ~230 places across ~50 files
@@ -35,9 +35,12 @@ const TEMPLATE = "web-app-scaffold";
 // SELF/selfRel): its TEMPLATE_NAME must always read the literal "web-app-scaffold" so it
 // can tell a renamed clone from the template, no matter what a clone gets renamed to. A
 // plain sweep would replace that constant with the new name on the very rename that is
-// supposed to make it stop matching, leaving every future `/setup` run believing the
-// rename never happened.
-const NEVER_TOUCH = new Set(["pnpm-lock.yaml", ".claude/skills/setup/scripts/state.sh"]);
+// supposed to make it stop matching, leaving every future setup-development or
+// setup-production run believing the rename never happened.
+const NEVER_TOUCH = new Set([
+  "pnpm-lock.yaml",
+  ".claude/skills/setup-development/scripts/state.sh",
+]);
 
 // Must be simultaneously a valid npm package/scope name AND a Cloudflare Worker name.
 // Worker names are the stricter of the two: lowercase alphanumerics and dashes, no
@@ -56,15 +59,24 @@ function die(message, hint) {
 
 function git(args, cwd) {
   try {
-    return execFileSync("git", args, { cwd, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
+    return execFileSync("git", args, {
+      cwd,
+      encoding: "utf8",
+      maxBuffer: 32 * 1024 * 1024,
+    });
   } catch (error) {
     // `git grep` exits 1 with empty output when nothing matched — that is a real result,
     // not a failure, and the caller distinguishes the two by the empty string.
     if (error.status === 1 && !error.stderr?.trim()) return "";
     if (error.code === "ENOENT") {
-      die("git is not on PATH.", "This script enumerates tracked files with `git grep`; install git and retry.");
+      die(
+        "git is not on PATH.",
+        "This script enumerates tracked files with `git grep`; install git and retry.",
+      );
     }
-    die(`git ${args.join(" ")} failed: ${(error.stderr || error.message).trim()}`);
+    die(
+      `git ${args.join(" ")} failed: ${(error.stderr || error.message).trim()}`,
+    );
   }
 }
 
@@ -77,15 +89,20 @@ const positional = argv.filter((a) => !a.startsWith("--"));
 
 if (positional.length !== 1) {
   die(
-    positional.length === 0 ? "no project name given." : `expected one name, got ${positional.length}.`,
-    "Usage: node .claude/skills/setup/scripts/rename.mjs <new-name> [--apply] [--allow-dirty]",
+    positional.length === 0
+      ? "no project name given."
+      : `expected one name, got ${positional.length}.`,
+    "Usage: node .claude/skills/setup-development/scripts/rename.mjs <new-name> [--apply] [--allow-dirty]",
   );
 }
 
 const name = positional[0];
 
 if (name === TEMPLATE) {
-  die(`"${name}" is the template's own name.`, "Pick the name this clone should have instead.");
+  die(
+    `"${name}" is the template's own name.`,
+    "Pick the name this clone should have instead.",
+  );
 }
 if (!NAME_RE.test(name)) {
   die(
@@ -98,7 +115,11 @@ if (!NAME_RE.test(name)) {
 // --- repo state ------------------------------------------------------------
 
 const root = git(["rev-parse", "--show-toplevel"], process.cwd()).trim();
-if (!root) die("not inside a git repository.", "Run this from anywhere inside the cloned scaffold.");
+if (!root)
+  die(
+    "not inside a git repository.",
+    "Run this from anywhere inside the cloned scaffold.",
+  );
 
 const selfRel = relative(root, SELF).split("\\").join("/");
 
@@ -144,7 +165,10 @@ for (const file of matched) {
   try {
     text = readFileSync(abs, "utf8");
   } catch (error) {
-    die(`could not read ${file}: ${error.message}`, "Fix the permission or remove the file, then retry.");
+    die(
+      `could not read ${file}: ${error.message}`,
+      "Fix the permission or remove the file, then retry.",
+    );
   }
   const hits = text.split(TEMPLATE).length - 1;
   totalHits += hits;
@@ -155,19 +179,31 @@ for (const file of matched) {
 rows.sort((a, b) => b.hits - a.hits || a.file.localeCompare(b.file));
 
 console.log(`\n${TEMPLATE}  ->  ${name}`);
-console.log(`${matched.length} tracked files, ${totalHits} occurrences ` + `(${docsHits} in docs/setup, ${totalHits - docsHits} elsewhere)\n`);
+console.log(
+  `${matched.length} tracked files, ${totalHits} occurrences ` +
+    `(${docsHits} in docs/setup, ${totalHits - docsHits} elsewhere)\n`,
+);
 
 const SHOWN = 12; // enough to recognise the shape of the change without paging the terminal
 for (const row of rows.slice(0, SHOWN)) {
   console.log(`  ${String(row.hits).padStart(4)}  ${row.file}`);
 }
-if (rows.length > SHOWN) console.log(`  ${String("+" + (rows.length - SHOWN)).padStart(4)}  more files`);
+if (rows.length > SHOWN)
+  console.log(
+    `  ${String("+" + (rows.length - SHOWN)).padStart(4)}  more files`,
+  );
 
-console.log(`\n  skipped  pnpm-lock.yaml (regenerated by \`pnpm install\`, never text-edited)`);
-console.log(`  skipped  .claude/skills/setup/scripts/state.sh (its TEMPLATE_NAME must stay "${TEMPLATE}")`);
+console.log(
+  `\n  skipped  pnpm-lock.yaml (regenerated by \`pnpm install\`, never text-edited)`,
+);
+console.log(
+  `  skipped  .claude/skills/setup-development/scripts/state.sh (its TEMPLATE_NAME must stay "${TEMPLATE}")`,
+);
 
 if (!apply) {
-  console.log(`\nDry run — nothing was written. Re-run with --apply to make these changes.\n`);
+  console.log(
+    `\nDry run — nothing was written. Re-run with --apply to make these changes.\n`,
+  );
   process.exit(0);
 }
 
@@ -194,9 +230,9 @@ Next, in order:
   3. git diff                     review, then commit
 
 Still empty, because they are accounts rather than names — a rename cannot invent them:
-  apps/graphql/wrangler.jsonc  MAIL_TEST_RECIPIENTS  asked for in Phase 3; empty refuses every recipient
-  apps/graphql/wrangler.jsonc  CORS_ORIGINS          derived in Phase 4; empty allows no origin
-  apps/graphql/wrangler.jsonc  WEB_ORIGIN            derived in Phase 4; empty is a named requireEnv error
-  apps/graphql/wrangler.jsonc  hyperdrive[0].id      derived in Phase 4; empty is fine until a real deploy
+  apps/graphql/wrangler.jsonc  MAIL_TEST_RECIPIENTS  asked for by setup-development; empty refuses every recipient
+  apps/graphql/wrangler.jsonc  CORS_ORIGINS          derived by setup-production; empty allows no origin
+  apps/graphql/wrangler.jsonc  WEB_ORIGIN            derived by setup-production; empty is a named requireEnv error
+  apps/graphql/wrangler.jsonc  hyperdrive[0].id      derived by setup-production; empty is fine until a real deploy
 All four are fail-closed while empty, so the local stack runs without them.
 `);

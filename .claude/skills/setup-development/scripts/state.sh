@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Report how far /setup has already got, so a rerun resumes instead of starting over.
+# Report how far setup-development and setup-production have already got, so a rerun
+# resumes instead of starting over. Shared by both skills — imported by path rather than
+# duplicated, so the two never drift apart.
 #
 # There is no state file, deliberately. Every row below is derived from what is actually
 # on disk or actually running, because a state file and the repo can disagree — someone
@@ -7,9 +9,9 @@
 # disagree the file is the one that lies. Probing costs a few milliseconds and cannot
 # drift.
 #
-# Two blocks, matching preflight.sh's two scopes: DEVELOPMENT (Phases 2-3) and
-# PRODUCTION (Phase 4). Each row is done / todo / n/a, and the machine-readable SUMMARY
-# line at the end is what the skill branches on when deciding which phase to offer.
+# Two blocks, matching preflight.sh's two scopes: DEVELOPMENT (the setup-development
+# skill) and PRODUCTION (the setup-production skill). Each row is done / todo / n/a, and
+# the machine-readable SUMMARY line at the end is what each skill branches on.
 #
 # Secrets are never printed. A row says "set", "placeholder" or "missing" and nothing
 # more — this output goes into a transcript.
@@ -18,7 +20,7 @@
 
 set -uo pipefail
 
-cd "$(dirname "$0")/../../../.." || exit 1     # scripts/ -> setup/ -> skills/ -> .claude/ -> repo root
+cd "$(dirname "$0")/../../../.." || exit 1     # scripts/ -> setup-development/ -> skills/ -> .claude/ -> repo root
 
 # The literal token this scaffold ships under — never the current clone's name. rename.mjs
 # excludes this file from its rewrite sweep (its NEVER_TOUCH set) for exactly this reason:
@@ -81,7 +83,7 @@ if [ "$scope" = development ] || [ "$scope" = all ]; then
 
   # --- the rename ----------------------------------------------------------
   if [ "$project_name" = "$TEMPLATE_NAME" ]; then
-    row_todo "project name" "still \"$TEMPLATE_NAME\" — Phase 2 renames it"
+    row_todo "project name" "still \"$TEMPLATE_NAME\" — setup-development renames it"
   else
     row_done "project name" "$project_name"
   fi
@@ -94,7 +96,7 @@ if [ "$scope" = development ] || [ "$scope" = all ]; then
   if [ -z "$origin" ]; then
     row_done "git origin" "none — nothing to push at by accident"
   elif printf '%s' "$origin" | grep -q "$TEMPLATE_NAME"; then
-    row_todo "git origin" "still the scaffold ($origin) — Phase 2 detaches it"
+    row_todo "git origin" "still the scaffold ($origin) — setup-development detaches it"
   else
     row_done "git origin" "$origin"
   fi
@@ -171,11 +173,11 @@ if [ "$scope" = development ] || [ "$scope" = all ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Production — Phase 4
+# Production — setup-production
 # ---------------------------------------------------------------------------
 if [ "$scope" = production ] || [ "$scope" = all ]; then
   section=production
-  printf '%sPRODUCTION%s %s— Phase 4. Every row here is derived from a resource that must exist first.%s\n' \
+  printf '%sPRODUCTION%s %s— setup-production. Every row here is derived from a resource that must exist first.%s\n' \
     "$BOLD" "$OFF" "$DIM" "$OFF"
 
   wj=apps/graphql/wrangler.jsonc
@@ -194,7 +196,7 @@ if [ "$scope" = production ] || [ "$scope" = all ]; then
 
   wmail="$(jsonc_val "$wj" MAIL_TEST_RECIPIENTS)"
   [ -n "$wmail" ] && row_done "MAIL_TEST_RECIPIENTS" "set in wrangler.jsonc" \
-                  || row_todo "MAIL_TEST_RECIPIENTS" "empty in wrangler.jsonc — reuse the Phase 3 answer"
+                  || row_todo "MAIL_TEST_RECIPIENTS" "empty in wrangler.jsonc — reuse the setup-development answer"
 
   # A service binding does not resolve across accounts, so these two agreeing is a
   # requirement and not a convention.

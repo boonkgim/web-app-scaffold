@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Probe everything /setup can reach for, and report it as two tables: what a working
-# DEVELOPMENT environment needs, and what a PRODUCTION deploy needs on top.
+# Probe everything setup-development and setup-production can reach for, and report it as
+# two tables: what a working DEVELOPMENT environment needs, and what a PRODUCTION deploy
+# needs on top. Shared by both skills, imported by path, so the two never drift apart.
 #
 # The split is development vs production, NOT local vs cloud — and that distinction is
 # the whole point of this script. A development environment that only has Docker is not
@@ -21,8 +22,8 @@
 #   warn    absent but optional; the row names the substitute
 #
 # Exit code is about DEVELOPMENT only: non-zero means the development table has a
-# MISSING row and Phase 3 cannot start. Production gaps never fail the exit code,
-# because a rerun of /setup is the supported way to add production later.
+# MISSING row and setup-development cannot proceed. Production gaps never fail the exit
+# code, because setup-production is a separate, later skill.
 #
 # Usage: preflight.sh [--scope development|production|all]   (default: all)
 #
@@ -39,7 +40,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --scope) scope="${2:-all}"; shift 2 ;;
     --scope=*) scope="${1#--scope=}"; shift ;;
-    -h|--help) sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) printf 'unknown argument: %s\n' "$1" >&2; exit 64 ;;
   esac
 done
@@ -155,7 +156,7 @@ if [ "$scope" = development ] || [ "$scope" = all ]; then
   stripe_config="${XDG_CONFIG_HOME:-$HOME/.config}/stripe/config.toml"
   if [ -f "$stripe_config" ]; then
     stripe_projects="$(grep -c '^\[' "$stripe_config" 2>/dev/null || echo 0)"
-    row_you "stripe acct" "${stripe_projects} project(s) configured — /setup will confirm which one, and that it is test mode"
+    row_you "stripe acct" "${stripe_projects} project(s) configured — setup-development will confirm which one, and that it is test mode"
   else
     row_bad "stripe acct" "no CLI login — sign up at https://dashboard.stripe.com/register, then: stripe login"
   fi
@@ -163,10 +164,10 @@ if [ "$scope" = development ] || [ "$scope" = all ]; then
   # --- Resend account ------------------------------------------------------
   # Unprobeable by design: the key lives in a gitignored .env, and Resend has no API for
   # creating keys. Listed anyway so nobody discovers halfway through that mail is dead.
-  row_you "resend acct" "free account + an API key from https://resend.com/api-keys (Phase 5 opens it for you)"
+  row_you "resend acct" "free account + an API key from https://resend.com/api-keys (setup-development opens it for you)"
 
   # --- Chrome + the extension ----------------------------------------------
-  # /setup drives the browser for every signup, login and key, so this is a development
+  # setup-development drives the browser for every signup, login and key, so this is a development
   # requirement now, not a nicety. Only half of it is probeable: a Chrome binary can be
   # found, but whether the extension is installed and permissioned for the five vendor
   # domains is a question for the user — the skill cannot grant a site permission.
@@ -177,9 +178,9 @@ if [ "$scope" = development ] || [ "$scope" = all ]; then
   # macOS installs an .app rather than something on PATH.
   [ -z "$chrome_found" ] && [ -d "/Applications/Google Chrome.app" ] && chrome_found="Google Chrome.app"
   if [ -n "$chrome_found" ]; then
-    row_you chrome "$chrome_found — /setup needs the Claude extension permissioned for stripe, resend, neon, cloudflare, github"
+    row_you chrome "$chrome_found — setup-development needs it permissioned for stripe and resend; setup-production adds neon, cloudflare and github"
   else
-    row_you chrome "no Chrome found — /setup drives it for signups and keys; without it you paste each value by hand"
+    row_you chrome "no Chrome found — setup-development and setup-production drive it for signups and keys; without it you paste each value by hand"
   fi
 
   # --- the clipboard relay --------------------------------------------------
@@ -191,7 +192,7 @@ if [ "$scope" = development ] || [ "$scope" = all ]; then
   if [ $? -eq 0 ]; then
     row_ok clipboard "${clip_check#ok } — keys can go from the browser to a file without passing through the model"
   else
-    row_warn clipboard "${clip_check#unavailable — } — /setup will read keys with read_page instead, or you paste them"
+    row_warn clipboard "${clip_check#unavailable — } — setup-development will read keys with read_page instead, or you paste them"
   fi
 
   # --- openssl -------------------------------------------------------------
@@ -222,7 +223,7 @@ if [ "$scope" = production ] || [ "$scope" = all ]; then
     row_ok wrangler "$(wrangler --version 2>/dev/null | tail -1)"
     if guard wrangler whoami >/dev/null 2>&1; then
       wrangler_email="$(guard wrangler whoami 2>/dev/null | grep -oE '[[:alnum:]._%+-]+@[[:alnum:].-]+' | head -1)"
-      row_you cloudflare "signed in as ${wrangler_email:-unknown} — /setup will confirm WHICH account before deploying"
+      row_you cloudflare "signed in as ${wrangler_email:-unknown} — setup-production will confirm WHICH account before deploying"
     else
       row_bad cloudflare "wrangler is not authenticated — run: wrangler login"
     fi
@@ -242,7 +243,7 @@ if [ "$scope" = production ] || [ "$scope" = all ]; then
   row_you neon "free Postgres project at https://neon.tech — the deployed database"
 
   # --- gh ------------------------------------------------------------------
-  # Optional: only Phase 2 uses it, and only to hand the user a repository of their own.
+  # Optional: only setup-development's project-identity step uses it, and only to hand the user a repository of their own.
   # Detaching from the template is plain git and needs nothing.
   if command -v gh >/dev/null 2>&1; then
     if gh auth status >/dev/null 2>&1; then
@@ -273,7 +274,7 @@ fi
 
 if [ "$scope" = development ] || [ "$scope" = all ]; then
   if [ "$dev_missing" -gt 0 ]; then
-    printf '%s%d development requirement(s) missing.%s Install them before Phase 3 — the fix is on each row.\n' \
+    printf '%s%d development requirement(s) missing.%s Install them before setup-development can proceed — the fix is on each row.\n' \
       "$RED" "$dev_missing" "$OFF"
   else
     printf '%sDevelopment is ready to set up.%s\n' "$GREEN" "$OFF"
@@ -281,12 +282,12 @@ if [ "$scope" = development ] || [ "$scope" = all ]; then
 fi
 if [ "$scope" = production ] || [ "$scope" = all ]; then
   if [ "$prod_missing" -gt 0 ]; then
-    printf '%s%d production requirement(s) missing.%s These block a deploy only — development is unaffected, and you can rerun /setup for production later.\n' \
+    printf '%s%d production requirement(s) missing.%s These block a deploy only — development is unaffected, and you can run setup-production when ready.\n' \
       "$YELLOW" "$prod_missing" "$OFF"
   fi
 fi
 if [ "$manual" -gt 0 ]; then
-  printf '%s%d row(s) marked "you"%s cannot be checked from a shell — /setup will walk you through each one.\n' \
+  printf '%s%d row(s) marked "you"%s cannot be checked from a shell — the setup skill you run will walk you through each one.\n' \
     "$BLUE" "$manual" "$OFF"
 fi
 

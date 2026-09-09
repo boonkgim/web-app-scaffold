@@ -11,6 +11,7 @@
     "test:integration": "vitest run --project integration",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
+    "migrate:rehearsal": "drizzle-kit migrate --config drizzle.rehearsal.config.ts",
     "migrate:production": "drizzle-kit migrate --config drizzle.production.config.ts"
   },
   "keywords": [],

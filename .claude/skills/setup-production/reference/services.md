@@ -1,7 +1,7 @@
-# Per-service detail for `/setup`
+# Per-service detail for `setup-production`
 
-CLI surfaces, verified live. The browser side of `/setup` — which is most of its steps —
-is in `browser.md`.
+CLI surfaces, verified live. The browser side of this — which is most of its steps — is
+in `../../setup-development/reference/browser.md`, shared with `setup-development`.
 
 ## Contents
 
@@ -114,7 +114,7 @@ live mode. `default` is a project like any other and was **not** the right one o
 machine this was verified against.
 
 **`stripe login` stores a restricted key, not the secret key.** So the `sk_test_` and
-`pk_test_` that Phase 3 writes into the two `.env.development` files do not come from the
+`pk_test_` that `setup-development` writes into the two `.env.development` files do not come from the
 CLI at all — they come from `https://dashboard.stripe.com/test/apikeys`, in test mode, as a
 browser step. The CLI's own config is still what resolves _which account_ those keys must
 belong to.
@@ -141,8 +141,8 @@ stripe --project-name <project> webhook_endpoints create \
 
 **A live-mode project is a hard stop.** If the resolved project's config holds a live key,
 say so and ask before anything is created, and never pipe a live key into a secret — unless
-the user has explicitly asked to go live, in which case this is `SKILL.md`'s **Stripe, live
-mode** section, not this one; it swaps the secret key, the publishable key and the webhook
+the user has explicitly asked to go live, in which case this is `setup-production`'s
+**Stripe, live mode** section, not this one; it swaps the secret key, the publishable key and the webhook
 endpoint together, because moving only one of the three is how this goes wrong silently.
 
 ## Resend
@@ -159,7 +159,7 @@ Destinations: `apps/graphql/.env.development` for development, and
 **only delivers to the Resend account owner's own address**. `MAIL_TEST_RECIPIENTS` is the
 address that mail is allowed to reach, and it ships **blank** in both `.env.example` and
 `wrangler.jsonc` — blank is fail-closed, `src/mail.ts` refuses every recipient. It is the
-one value `/setup` asks the user for outright, in Phase 3; use that same answer here, and it
+one value `setup-development` asks the user for outright; use that same answer here, and it
 should normally be the Resend account owner's address. A custom domain is later work, not
 setup.
 
@@ -180,14 +180,14 @@ printf %s "$SECRET" | npx wrangler@4 secret put BETTER_AUTH_SECRET
 | `STRIPE_WEBHOOK_SECRET` | the `whsec_` from `webhook_endpoints create`                      |
 
 Guard the Stripe one: refuse anything not containing `_test_` unless the user has explicitly
-said they want live mode and confirmed the account — and even then, follow `SKILL.md`'s
+said they want live mode and confirmed the account — and even then, follow `setup-production`'s
 **Stripe, live mode** section rather than swapping this one secret in isolation. The
 publishable key (`apps/web/.env.production`, build-time, not a `wrangler secret`) and the
 webhook endpoint (mode-scoped, so the test one does not carry over) have to move with it.
 
 ## Undo
 
-Everything Phase 4 creates is deletable, and knowing that up front is what makes the
+Everything this skill creates is deletable, and knowing that up front is what makes the
 account gate recoverable rather than terminal:
 
 ```bash

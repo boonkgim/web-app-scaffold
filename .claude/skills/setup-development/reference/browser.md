@@ -1,6 +1,6 @@
-# Driving the browser for `/setup`
+# Driving the browser for `setup-development` and `setup-production`
 
-`/setup` runs the browser as its **default surface**, not as a fallback. Every step a
+`setup-development` and `setup-production` run the browser as their **default surface**, not as a fallback. Every step a
 person would otherwise do in a tab — signing up, signing in, approving an OAuth consent
 screen, copying a key off a dashboard — is driven with the `mcp__claude-in-chrome` tools.
 
@@ -58,12 +58,12 @@ destination. The value goes browser → clipboard → file and **never enters th
 context**:
 
 ```bash
-{ printf 'RESEND_API_KEY='; bash .claude/skills/setup/scripts/clipboard.sh --paste --expect re_; printf '\n'; } \
+{ printf 'RESEND_API_KEY='; bash .claude/skills/setup-development/scripts/clipboard.sh --paste --expect re_; printf '\n'; } \
   >> apps/graphql/.env.development
 ```
 
 ```bash
-bash .claude/skills/setup/scripts/clipboard.sh --paste --expect whsec_ | npx wrangler@4 secret put STRIPE_WEBHOOK_SECRET
+bash .claude/skills/setup-development/scripts/clipboard.sh --paste --expect whsec_ | npx wrangler@4 secret put STRIPE_WEBHOOK_SECRET
 ```
 
 `clipboard.sh` detects the backend per OS (`pbpaste` on macOS, `wl-paste` or `xclip` on
@@ -152,7 +152,7 @@ written here. If the page does not match, say so rather than clicking hopefully.
   **Test mode** before reading anything. Both rows have a copy control; the secret key
   needs a reveal click first. Relay each one separately — `--expect pk_test_`, then
   `--expect sk_test_` — rather than copying both and sorting them out afterwards.
-- **A `sk_live_` or a page in live mode is a hard stop, outside `SKILL.md`'s explicit
+- **A `sk_live_` or a page in live mode is a hard stop, outside `setup-production`'s explicit
   "Stripe, live mode" section.** Do not read it, do not write it, say so and ask. Inside
   that section, a page reading **Live mode** is exactly the page to be on — confirm it the
   same way you confirm Test mode here, then proceed.
@@ -163,7 +163,7 @@ written here. If the page does not match, say so rather than clicking hopefully.
   mode, because the `whsec_` in its response is easier to capture than a modal's
   reveal-once field. **In live mode, do this in the dashboard instead** —
   `https://dashboard.stripe.com/webhooks` — because no live-mode flag for that command is
-  verified; see `SKILL.md`'s "Stripe, live mode" section.
+  verified; see `setup-production`'s "Stripe, live mode" section.
 
 ### Resend
 
