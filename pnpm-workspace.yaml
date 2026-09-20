@@ -67,11 +67,11 @@ allowBuilds:
 catalog:
   typescript: ^6.0.3
   eslint: ^10.10.0
-  "@types/node": ^24.13.3
-  react: 19.2.8
-  react-dom: 19.2.8
-  better-auth: ^1.7.3
-  auth: ^1.7.3
+  "@types/node": ^24.13.5
+  react: 19.3.0
+  react-dom: 19.3.0
+  better-auth: ^1.7.5
+  auth: ^1.7.5
 
 # Written by pnpm itself, not by hand. pnpm 11 holds a release-age cooldown on new
 # versions and records the ones an install accepted anyway; `pnpm add` appends here
