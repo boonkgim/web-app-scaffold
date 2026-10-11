@@ -25,17 +25,17 @@
     "@web-app-scaffold/email": "workspace:*",
     "better-auth": "catalog:",
     "graphql": "^17.0.2",
-    "graphql-yoga": "^5.22.0",
+    "graphql-yoga": "^5.24.4",
     "stripe": "^22.6.1"
   },
   "devDependencies": {
-    "@eddeee888/gcg-typescript-resolver-files": "0.19.0",
-    "@graphql-codegen/cli": "^7.4.0",
+    "@eddeee888/gcg-typescript-resolver-files": "0.20.0",
+    "@graphql-codegen/cli": "^7.4.5",
     "@types/node": "catalog:",
     "auth": "catalog:",
     "typescript": "catalog:",
-    "vitest": "^5.0.0",
-    "wrangler": "4.129.0"
+    "vitest": "^5.0.3",
+    "wrangler": "4.149.0"
   },
   "private": true
 }
