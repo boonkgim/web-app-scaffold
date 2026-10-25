@@ -66,12 +66,12 @@ allowBuilds:
 # second ranged entry here would drift away from the copy core actually uses.
 catalog:
   typescript: ^6.0.3
-  eslint: ^10.10.0
-  "@types/node": ^24.13.3
-  react: 19.2.8
-  react-dom: 19.2.8
-  better-auth: ^1.7.3
-  auth: ^1.7.3
+  eslint: ^10.13.0
+  "@types/node": ^24.19.2
+  react: 19.3.1
+  react-dom: 19.3.1
+  better-auth: ^1.7.12
+  auth: ^1.7.12
 
 # Written by pnpm itself, not by hand. pnpm 11 holds a release-age cooldown on new
 # versions and records the ones an install accepted anyway; `pnpm add` appends here
